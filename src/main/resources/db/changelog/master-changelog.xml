@@ -5,4 +5,5 @@
 
     <include file="1.0/170320241619_001_init_tables.xml" relativeToChangelogFile="true"/>
 <!--    <include file="1.0/170320241627_002_fill_users_table.xml" relativeToChangelogFile="true"/>-->
+    <include file="1.0/180320242249_003_init_tables.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
