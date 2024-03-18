@@ -8,6 +8,7 @@ import java.net.URL;
 
 public class Main {
     public static void main(String[] args) {
+        // new function for test
         try {
             String overpassEndpoint = "http://overpass-api.de/api/interpreter";
             String query = "[out:json];" +
