@@ -5,7 +5,7 @@
 
     <changeSet id="180320242249_003_add_column_phone_number" author="Ilya">
         <addColumn tableName="local_places_lift_gates">
-            <column name="phone_number" type="varchar(10)"/>
+            <column name="phone_number" type="varchar(16)"/>
         </addColumn>
     </changeSet>
 

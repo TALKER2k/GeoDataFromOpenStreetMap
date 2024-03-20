@@ -16,5 +16,7 @@ public class LocalPlaceLiftGate {
     private Double lat;
     @Column(name = "name")
     private String name;
+    @Column(name = "phone_number")
+    private String phoneNumber;
 }
 

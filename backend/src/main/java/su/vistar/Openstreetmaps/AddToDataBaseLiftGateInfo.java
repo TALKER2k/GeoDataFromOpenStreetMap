@@ -23,36 +23,42 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AddToDataBaseLiftGateInfo {
     public static void main(String[] args) {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
-        String query = "[out:json];way[\"barrier\"=\"lift_gate\"];out;";
-
-        try {
-            String response = sendOverpassQuery(overpassUrl, query);
-            List<Map<String, Object>> liftGates = processOverpassResponse(response);
-            System.out.println("Координаты шлагбаумов:");
-            for (Map<String, Object> liftGate : liftGates) {
-                System.out.println("ID: " + liftGate.get("id"));
-                System.out.println("Координаты: " + liftGate.get("coordinates"));
+        double latitudeCurrentNode = 51.6589507;
+        double longitudeCurrentNode = 39.2032023;
+        int radiusMeters = 10000;
+        List<String> barriersType = new ArrayList<>();
+        barriersType.add("lift_gate");
+        barriersType.add("gate");
+        for (String barrier : barriersType) {
+            String query = "[out:json];" +
+                    "(node[barrier=" + barrier + "](around:" + radiusMeters + "," +
+                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
+                    "way[barrier=" + barrier + "](around:" + radiusMeters + "," +
+                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
+                    "relation[barrier=" + barrier + "](around:" + radiusMeters + "," +
+                    latitudeCurrentNode + "," + longitudeCurrentNode + "););" +
+                    "out;";
+            try {
+                String response = sendOverpassQuery(overpassUrl, query);
+                processOverpassResponse(response);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
-    private static List<Map<String, Object>> processOverpassResponse(String response) throws Exception {
+    private static void processOverpassResponse(String response) {
         try {
             databaseUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        List<Map<String, Object>> liftGates = new ArrayList<>();
         JSONObject jsonResponse = new JSONObject(response);
 
         JSONArray elements = jsonResponse.getJSONArray("elements");
@@ -60,30 +66,21 @@ public class AddToDataBaseLiftGateInfo {
             JSONObject element = elements.getJSONObject(i);
             long id = element.getLong("id");
 
-            System.out.println(element);
-
-            JSONArray nodesArray = element.getJSONArray("nodes");
-            long nodeId = nodesArray.getLong(0);
-            Map<String, Double> coordinates = getNodeCoordinates(nodeId);
-
-            Map<String, Object> liftGateInfo = new HashMap<>();
-            liftGateInfo.put("id", id);
-
-            liftGateInfo.put("coordinates", coordinates);
-            liftGates.add(liftGateInfo);
+            double lat = element.getDouble("lat");
+            double lon = element.getDouble("lon");
 
             LocalPlaceLiftGate localPlaceLiftGate = new LocalPlaceLiftGate();
             localPlaceLiftGate.setGatesId(id);
-            localPlaceLiftGate.setLat(coordinates.get("lon"));
-            localPlaceLiftGate.setLon(coordinates.get("lat"));
+            localPlaceLiftGate.setLat(lon);
+            localPlaceLiftGate.setLon(lat);
+            localPlaceLiftGate.setPhoneNumber("+79001234567");
 
             JSONObject tags = element.getJSONObject("tags");
-            if (tags.has("name")) {
-                localPlaceLiftGate.setName(tags.getString("name"));
+            if (tags.has("barrier")) {
+                localPlaceLiftGate.setName(tags.getString("barrier"));
             }
             persistDataBaseGate(localPlaceLiftGate);
         }
-        return liftGates;
     }
 
     private static void persistDataBaseGate(LocalPlaceLiftGate localPlaceLiftGate) {
@@ -115,24 +112,6 @@ public class AddToDataBaseLiftGateInfo {
         }
     }
 
-    private static Map<String, Double> getNodeCoordinates(long nodeId) throws Exception {
-        String overpassUrl = "https://overpass-api.de/api/interpreter";
-        String query = "[out:json];node(" + nodeId + ");out;";
-
-        String response = sendOverpassQuery(overpassUrl, query);
-        JSONObject jsonResponse = new JSONObject(response);
-        JSONArray elements = jsonResponse.getJSONArray("elements");
-        if (elements.length() > 0) {
-            JSONObject nodeElement = elements.getJSONObject(0);
-            double lat = nodeElement.getDouble("lat");
-            double lon = nodeElement.getDouble("lon");
-            Map<String, Double> coordinates = new HashMap<>();
-            coordinates.put("lat", lat);
-            coordinates.put("lon", lon);
-            return coordinates;
-        }
-        return null;
-    }
 
     private static String sendOverpassQuery(String overpassUrl, String query) throws Exception {
         URL url = new URL(overpassUrl);
