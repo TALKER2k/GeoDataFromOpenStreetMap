@@ -14,11 +14,11 @@ public interface LocalPlaceGateRepository extends JpaRepository<LocalPlaceGate, 
     Optional<LocalPlaceGate> findByLatitudeAndLongitude(Double latitude, Double longitude);
 
     //формула расчета расстояния между двумя точками на поверхности Земли
-    @Query("SELECT a FROM LocalPlaceGate a " +
+    @Query(value = "SELECT * FROM local_place_gate " +
             "WHERE " +
-            "6371 * 2 * ASIN(SQRT(POW(SIN((RADIANS(a.latitude) - RADIANS(:gateLatitude)) / 2), 2) + " +
-            "COS(RADIANS(:gateLatitude)) * COS(RADIANS(a.latitude)) * " +
-            "POW(SIN((RADIANS(a.longitude) - RADIANS(:gateLongitude)) / 2), 2))) <= :radiusInKm")
+            "6371 * 2 * ASIN(SQRT(POW(SIN((RADIANS(latitude) - RADIANS(:gateLatitude)) / 2), 2) + " +
+            "COS(RADIANS(:gateLatitude)) * COS(RADIANS(latitude)) * " +
+            "POW(SIN((RADIANS(longitude) - RADIANS(:gateLongitude)) / 2), 2))) <= :radiusInKm", nativeQuery = true)
     List<LocalPlaceGate> findNearbyAmbulanceVehicles(
             @Param("gateLatitude") double gateLatitude,
             @Param("gateLongitude") double gateLongitude,

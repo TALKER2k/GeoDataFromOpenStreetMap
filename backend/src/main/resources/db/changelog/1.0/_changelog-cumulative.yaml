@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - preConditions:
+      - dbms:
+          type: postgresql
+
+  - changeSet:
+      id: 170320241619_001_init_tables
+      author: Nikita Pushkin
+      comment: Create db structure
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: 170320241619_001_init_tables.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 180320242249_002_add_column_phone_number
+      author: Nikita Pushkin
+      comment: Add new column phone number into table local_places_lift_gates
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: 180320242249_002_add_column_phone_number.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 200320242215_003_create_sequence_users
+      author: Nikita Pushkin
+      comment: create sequence for table users
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: 200320242215_003_create_sequence_users.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 200320242227_004_insert_data_into_users
+      author: Nikita Pushkin
+      comment: insert data users
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: 200320242227_004_insert_data_into_users.sql
+            relativeToChangelogFile: true
