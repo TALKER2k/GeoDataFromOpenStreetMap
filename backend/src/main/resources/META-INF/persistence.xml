@@ -6,7 +6,7 @@
 
     <persistence-unit name="br.com.fredericci.pu">
         <description>Hibernate EntityManager Demo</description>
-        <class>su.vistar.Openstreetmaps.models.LocalPlaceLiftGate</class>
+        <class>su.vistar.Openstreetmaps.models.LocalPlaceGate</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>

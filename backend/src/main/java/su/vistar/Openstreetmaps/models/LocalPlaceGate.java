@@ -6,14 +6,14 @@ import lombok.Data;
 @Entity
 @Table(name = "local_places_lift_gates")
 @Data
-public class LocalPlaceLiftGate {
+public class LocalPlaceGate {
     @Id
     @Column(name = "gates_id", unique = true)
     private Long gatesId;
     @Column(name = "lon")
-    private Double lon;
+    private Double longitude;
     @Column(name = "lat")
-    private Double lat;
+    private Double latitude;
     @Column(name = "name")
     private String name;
     @Column(name = "phone_number")

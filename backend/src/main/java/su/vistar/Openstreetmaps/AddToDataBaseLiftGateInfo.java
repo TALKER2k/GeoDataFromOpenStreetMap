@@ -13,7 +13,7 @@ import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import su.vistar.Openstreetmaps.models.LocalPlaceLiftGate;
+import su.vistar.Openstreetmaps.models.LocalPlaceGate;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -28,9 +28,11 @@ import java.util.List;
 public class AddToDataBaseLiftGateInfo {
     public static void main(String[] args) {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
-        double latitudeCurrentNode = 51.6589507;
-        double longitudeCurrentNode = 39.2032023;
-        int radiusMeters = 10000;
+        //примерно центр Воронежа
+        double latitudeCurrentNode = 51.661535;
+        double longitudeCurrentNode = 39.200287;
+        //14 км радиуса, чтоб охватить весь Воронеж
+        int radiusMeters = 15000;
         List<String> barriersType = new ArrayList<>();
         barriersType.add("lift_gate");
         barriersType.add("gate");
@@ -69,31 +71,31 @@ public class AddToDataBaseLiftGateInfo {
             double lat = element.getDouble("lat");
             double lon = element.getDouble("lon");
 
-            LocalPlaceLiftGate localPlaceLiftGate = new LocalPlaceLiftGate();
-            localPlaceLiftGate.setGatesId(id);
-            localPlaceLiftGate.setLat(lon);
-            localPlaceLiftGate.setLon(lat);
-            localPlaceLiftGate.setPhoneNumber("+79001234567");
+            LocalPlaceGate localPlaceGate = new LocalPlaceGate();
+            localPlaceGate.setGatesId(id);
+            localPlaceGate.setLatitude(lon);
+            localPlaceGate.setLongitude(lat);
+            localPlaceGate.setPhoneNumber("+79001234567");
 
             JSONObject tags = element.getJSONObject("tags");
             if (tags.has("barrier")) {
-                localPlaceLiftGate.setName(tags.getString("barrier"));
+                localPlaceGate.setName(tags.getString("barrier"));
             }
-            persistDataBaseGate(localPlaceLiftGate);
+            persistDataBaseGate(localPlaceGate);
         }
     }
 
-    private static void persistDataBaseGate(LocalPlaceLiftGate localPlaceLiftGate) {
+    private static void persistDataBaseGate(LocalPlaceGate localPlaceGate) {
         final EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("br.com.fredericci.pu");
         final EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-        LocalPlaceLiftGate entityLocalPlace = entityManager.find(LocalPlaceLiftGate.class, localPlaceLiftGate.getGatesId());
+        LocalPlaceGate entityLocalPlace = entityManager.find(LocalPlaceGate.class, localPlaceGate.getGatesId());
 
         entityManager.getTransaction().begin();
         if (entityLocalPlace == null) {
-            entityManager.persist(localPlaceLiftGate);
+            entityManager.persist(localPlaceGate);
         } else {
-            entityManager.merge(localPlaceLiftGate);
+            entityManager.merge(localPlaceGate);
         }
 
         entityManager.getTransaction().commit();
