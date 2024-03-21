@@ -42,3 +42,13 @@ databaseChangeLog:
         - sqlFile:
             path: 200320242227_004_insert_data_into_users.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: 210320241758_005_add_timestamp_for_table_gates
+      author: Nikita Pushkin
+      comment: add column timestamp into local_gates
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: 210320241758_005_add_timestamp_for_table_gates.sql
+            relativeToChangelogFile: true
