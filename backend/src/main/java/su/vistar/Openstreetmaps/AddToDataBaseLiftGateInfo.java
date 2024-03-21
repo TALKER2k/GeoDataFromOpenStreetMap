@@ -106,7 +106,7 @@ public class AddToDataBaseLiftGateInfo {
     private static void databaseUpdate() throws LiquibaseException, SQLException {
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5433/osm", "postgres", "postgres")) {
             Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-            try (Liquibase liquibase = new liquibase.Liquibase("db/changelog/master-changelog.yaml", new ClassLoaderResourceAccessor(), database)) {
+            try (Liquibase liquibase = new Liquibase("db/changelog/master-changelog.yaml", new ClassLoaderResourceAccessor(), database)) {
                 liquibase.update(new Contexts(), new LabelExpression());
             }
         } catch (SQLException | LiquibaseException e) {
