@@ -3,6 +3,8 @@ package su.vistar.Openstreetmaps.models;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "local_places_lift_gates")
 @Data
@@ -18,5 +20,7 @@ public class LocalPlaceGate {
     private String name;
     @Column(name = "phone_number")
     private String phoneNumber;
+    @Column(name = "update_date")
+    private LocalDateTime update_date;
 }
 
