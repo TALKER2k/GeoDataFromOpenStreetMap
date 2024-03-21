@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import su.vistar.Openstreetmaps.services.CustomUserDetailsServiceImpl;
+import su.vistar.Openstreetmaps.services.impl.CustomUserDetailsServiceImpl;
 
 import java.io.IOException;
 

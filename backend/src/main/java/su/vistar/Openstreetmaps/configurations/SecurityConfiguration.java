@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import su.vistar.Openstreetmaps.security.JWTAuthenticationFilter;
 import su.vistar.Openstreetmaps.security.JwtAuthEntryPoint;
 import su.vistar.Openstreetmaps.security.SecurityConstants;
-import su.vistar.Openstreetmaps.services.CustomUserDetailsServiceImpl;
+import su.vistar.Openstreetmaps.services.impl.CustomUserDetailsServiceImpl;
 
 @Configuration
 @EnableWebSecurity
