@@ -10,8 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
+import su.vistar.Openstreetmaps.DTO.GeoLocation;
 import su.vistar.Openstreetmaps.DTO.LoginDTO;
 import su.vistar.Openstreetmaps.DTO.RegistrationFormDTO;
 import su.vistar.Openstreetmaps.models.Employee;
@@ -22,7 +21,6 @@ import su.vistar.Openstreetmaps.security.JWTGenerator;
 import su.vistar.Openstreetmaps.security.SecurityConstants;
 
 import java.util.Collections;
-import java.util.List;
 
 @AllArgsConstructor
 @Service
@@ -62,5 +60,13 @@ public class UsersService {
 
     public boolean existsByUserName(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    public void saveUserGeoLocation(String username, GeoLocation geoLocation) {
+        Employee employee = userRepository.findByUsername(username);
+        employee.setLatitude(geoLocation.latitude())
+                .setLongitude(geoLocation.longitude());
+
+        userRepository.save(employee);
     }
 }
