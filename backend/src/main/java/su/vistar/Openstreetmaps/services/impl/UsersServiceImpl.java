@@ -1,4 +1,4 @@
-package su.vistar.Openstreetmaps.services;
+package su.vistar.Openstreetmaps.services.impl;
 
 
 import lombok.AllArgsConstructor;
@@ -14,24 +14,30 @@ import su.vistar.Openstreetmaps.DTO.GeoLocation;
 import su.vistar.Openstreetmaps.DTO.LoginDTO;
 import su.vistar.Openstreetmaps.DTO.RegistrationFormDTO;
 import su.vistar.Openstreetmaps.models.Employee;
+import su.vistar.Openstreetmaps.models.LocalPlaceGate;
 import su.vistar.Openstreetmaps.models.Role;
+import su.vistar.Openstreetmaps.repositories.LocalPlaceGateRepository;
 import su.vistar.Openstreetmaps.repositories.RoleRepository;
 import su.vistar.Openstreetmaps.repositories.UserRepository;
 import su.vistar.Openstreetmaps.security.JWTGenerator;
 import su.vistar.Openstreetmaps.security.SecurityConstants;
+import su.vistar.Openstreetmaps.services.TelephoneService;
+import su.vistar.Openstreetmaps.services.UserService;
 
 import java.util.Collections;
+import java.util.List;
 
 @AllArgsConstructor
 @Service
 @Slf4j
-public class UsersService {
+public class UsersServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTGenerator jwtGenerator;
 
+    @Override
     @Transactional
     public Employee registerUser(RegistrationFormDTO registrationFormDto) {
         Role roles = roleRepository.findByName(SecurityConstants.USER)
@@ -46,6 +52,8 @@ public class UsersService {
         return registeredUser;
     }
 
+
+    @Override
     public String loginUser(LoginDTO loginDto) {
         log.info("Authentication. User {}", loginDto.username());
 
@@ -58,15 +66,8 @@ public class UsersService {
         return jwtGenerator.generateToken(authentication);
     }
 
+    @Override
     public boolean existsByUserName(String username) {
         return userRepository.existsByUsername(username);
-    }
-
-    public void saveUserGeoLocation(String username, GeoLocation geoLocation) {
-        Employee employee = userRepository.findByUsername(username);
-        employee.setLatitude(geoLocation.latitude())
-                .setLongitude(geoLocation.longitude());
-
-        userRepository.save(employee);
     }
 }

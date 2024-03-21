@@ -1,20 +1,19 @@
 package su.vistar.Openstreetmaps.controllers;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import su.vistar.Openstreetmaps.DTO.AuthorizationResponseDTO;
 import su.vistar.Openstreetmaps.DTO.LoginDTO;
 import su.vistar.Openstreetmaps.DTO.RegistrationFormDTO;
 import su.vistar.Openstreetmaps.models.Employee;
-import su.vistar.Openstreetmaps.services.UsersService;
+import su.vistar.Openstreetmaps.services.impl.UsersServiceImpl;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthorizationController {
-    private final UsersService usersService;
+    private final UsersServiceImpl usersService;
 
-    public AuthorizationController(UsersService usersService) {
+    public AuthorizationController(UsersServiceImpl usersService) {
         this.usersService = usersService;
     }
 
@@ -43,5 +42,4 @@ public class AuthorizationController {
                 .header("Server message", "User registered successfully")
                 .body(employee);
     }
-
 }
