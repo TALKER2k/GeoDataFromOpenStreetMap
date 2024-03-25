@@ -35,57 +35,59 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     @Scheduled(cron = "0 0 20 * * *")
     @Override
     public void updateAllGates() {
-
-        executor.submit(() -> {
-            String overpassUrl = "https://overpass-api.de/api/interpreter";
-            //примерно центр Воронежа
-            double latitudeCurrentNode = 51.661535;
-            double longitudeCurrentNode = 39.200287;
-            //14 км радиуса, чтоб охватить весь Воронеж
-            int radiusMeters = 15000;
-            List<String> barriersType = new ArrayList<>();
-            barriersType.add("lift_gate");
-            barriersType.add("gate");
-            for (String barrier : barriersType) {
-                String query = "[out:json];" +
-                        "(node[barrier=" + barrier + "](around:" + radiusMeters + "," +
-                        latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
-                        "way[barrier=" + barrier + "](around:" + radiusMeters + "," +
-                        latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
-                        "relation[barrier=" + barrier + "](around:" + radiusMeters + "," +
-                        latitudeCurrentNode + "," + longitudeCurrentNode + "););" +
-                        "out;";
-                try {
-                    String response = sendOverpassQuery(overpassUrl, query);
-                    processOverpassResponse(response);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
+        //примерно центр Воронежа
+        double latitudeCurrentNode = 51.661535;
+        double longitudeCurrentNode = 39.200287;
+        //14 км радиуса, чтоб охватить весь Воронеж
+        int radiusMeters = 15000;
+        List<String> barriersType = new ArrayList<>();
+        barriersType.add("lift_gate");
+        barriersType.add("gate");
+        for (String barrier : barriersType) {
+            String query = "[out:json];" +
+                    "(node[barrier=" + barrier + "](around:" + radiusMeters + "," +
+                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
+                    "way[barrier=" + barrier + "](around:" + radiusMeters + "," +
+                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
+                    "relation[barrier=" + barrier + "](around:" + radiusMeters + "," +
+                    latitudeCurrentNode + "," + longitudeCurrentNode + "););" +
+                    "out;";
+            try {
+                String response = sendOverpassQuery(overpassUrl, query);
+                processOverpassResponse(response);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     @Override
     public List<LocalPlaceGate> checkGatesAround(String username, GeoLocation geoLocation) {
-        Employee employee = userRepository.findByUsername(username);
-        employee.setLatitude(geoLocation.latitude())
-                .setLongitude(geoLocation.longitude());
+        executor.submit(() -> {
 
-        userRepository.save(employee);
+            Employee employee = userRepository.findByUsername(username);
+            employee.setLatitude(geoLocation.latitude())
+                    .setLongitude(geoLocation.longitude());
 
-        List<LocalPlaceGate> placeGateList = localPlaceGateRepository.findNearbyAmbulanceVehicles(
-                employee.getLatitude(),
-                employee.getLongitude(),
-                0.05
-        );
+            userRepository.save(employee);
 
-        if (!placeGateList.isEmpty()) {
-            for (LocalPlaceGate gate : placeGateList) {
-                telephoneService.callByNumber(gate.getPhoneNumber());
+            List<LocalPlaceGate> placeGateList = localPlaceGateRepository.findNearbyAmbulanceVehicles(
+                    employee.getLatitude(),
+                    employee.getLongitude(),
+                    0.05
+            );
+
+            if (!placeGateList.isEmpty()) {
+                for (LocalPlaceGate gate : placeGateList) {
+                    telephoneService.callByNumber(gate.getPhoneNumber());
+                }
             }
-        }
 
-        return placeGateList;
+            return placeGateList;
+
+        });
+        return null;
     }
 
     private void processOverpassResponse(String response) {
