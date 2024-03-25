@@ -52,3 +52,13 @@ databaseChangeLog:
         - sqlFile:
             path: 210320241758_005_add_timestamp_for_table_gates.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: 250320241940_006_add_table_localplace_bus_stop
+      author: Ilya Stinenko
+      comment: add table localplace bus stop
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: 250320241940_006_add_table_localplace_bus_stop.sql
+            relativeToChangelogFile: true
