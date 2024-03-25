@@ -22,12 +22,10 @@ import su.vistar.Openstreetmaps.services.impl.CustomUserDetailsServiceImpl;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
-    private final CustomUserDetailsServiceImpl service;
     private final JwtAuthEntryPoint authEntryPoint;
 
     @Autowired
-    public SecurityConfiguration(CustomUserDetailsServiceImpl service, JwtAuthEntryPoint authEntryPoint) {
-        this.service = service;
+    public SecurityConfiguration(JwtAuthEntryPoint authEntryPoint) {
         this.authEntryPoint = authEntryPoint;
     }
 
