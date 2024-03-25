@@ -12,6 +12,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TestMain {
     public static void main(String[] args) throws IOException {
@@ -47,13 +48,13 @@ public class TestMain {
 
         System.out.println(jsonResponse);
 
-//        JSONArray elements = jsonResponse.getJSONArray("elements");
-//        for (int i = 0; i < elements.length(); i++) {
-//            JSONObject element = elements.getJSONObject(i);
-//
-//
-//            System.out.println();
-//        }
+        JSONArray elements = jsonResponse.getJSONArray("elements");
+        for (int i = 0; i < elements.length(); i++) {
+            JSONObject element = elements.getJSONObject(i);
+            long id = element.getLong("id");
+
+            System.out.println(element);
+        }
     }
 
     private static String sendOverpassQuery(String overpassUrl, String query) throws Exception {
