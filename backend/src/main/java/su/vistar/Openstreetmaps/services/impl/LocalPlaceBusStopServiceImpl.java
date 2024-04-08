@@ -103,5 +103,4 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
 
         return response.toString();
     }
-    }
-
+}
