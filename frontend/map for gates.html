@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Map</title>
+    <link rel="stylesheet" href="https://openlayers.org/en/v6.15.1/css/ol.css" type="text/css">
+    <style>
+        #map {
+            width: 100%;
+            height: 600px;
+            margin-top: 10px;
+        }
+        #cityInput {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <label for="cityInput">Enter a city:</label>
+        <input type="text" id="cityInput" name="cityInput">
+        <button onclick="searchCity()">Search</button>
+        <button onclick="showMyLocation()">Show My Location</button>
+    </div>
+    <div id="map" class="map"></div>
+    <script src="https://openlayers.org/en/v6.15.1/build/ol.js"></script>
+    <script>
+        var map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([0, 0]),
+                zoom: 2
+            })
+        });
+
+        function addMarker(coordinates) {
+            var vectorSource = new ol.source.Vector();
+            var vectorLayer = new ol.layer.Vector({
+                source: vectorSource
+            });
+
+            map.addLayer(vectorLayer);
+
+            var marker = new ol.Feature({
+                geometry: new ol.geom.Point(coordinates)
+            });
+
+            vectorSource.addFeature(marker);
+        }
+
+        function searchCity() {
+    var city = document.getElementById('cityInput').value;
+    if (city.trim() === '') {
+        alert('Please enter a city name.');
+        return;
+    }
+
+    fetch('/getAllGates?city=' + city, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.length === 0) {
+            alert('No results found for the city: ' + city);
+        } else {
+            // Clear previous markers
+            clearMarkers();
+
+            // Add markers for gates
+            data.forEach(gate => {
+                var coordinates = [gate.longitude, gate.latitude];
+                addMarker(ol.proj.fromLonLat(coordinates));
+            });
+            
+            // Fit map view to all gates
+            fitMapToGates(data);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function clearMarkers() {
+    var vectorLayers = map.getLayers().getArray().filter(layer => layer instanceof ol.layer.Vector);
+    vectorLayers.forEach(layer => {
+        layer.getSource().clear();
+    });
+}
+
+function fitMapToGates(gates) {
+    var coordinates = gates.map(gate => [gate.longitude, gate.latitude]);
+    var extent = ol.extent.boundingExtent(coordinates.map(coord => ol.proj.fromLonLat(coord)));
+    map.getView().fit(extent, { padding: [50, 50, 50, 50] });
+}
+
+        function showMyLocation() {
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var coordinates = [position.coords.longitude, position.coords.latitude];
+                    var extent = ol.extent.boundingExtent([ol.proj.fromLonLat(coordinates)]);
+                    map.getView().fit(extent, { padding: [50, 50, 50, 50] });
+                    addMarker(ol.proj.fromLonLat(coordinates));
+                }, function(error) {
+                    console.error('Error getting user location:', error);
+                    alert('Error getting user location.');
+                });
+            } else {
+                alert('Geolocation is not supported by your browser.');
+            }
+        }
+    </script>
+</body>
+</html>
