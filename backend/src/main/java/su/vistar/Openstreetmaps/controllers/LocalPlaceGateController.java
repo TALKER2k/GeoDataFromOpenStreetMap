@@ -3,8 +3,12 @@ package su.vistar.Openstreetmaps.controllers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import su.vistar.Openstreetmaps.DTO.GatesDTO;
 import su.vistar.Openstreetmaps.services.LocalPlaceGateService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/settings_gates")
@@ -15,5 +19,10 @@ public class LocalPlaceGateController {
     @GetMapping("/update")
     public void updateAllGates() {
         localPlaceGateService.updateAllGates();
+    }
+
+    @GetMapping("/getAllGates")
+    public List<GatesDTO> getAllGates(@RequestParam("city") String city) {
+        return localPlaceGateService.getAllGatesByCity(city);
     }
 }

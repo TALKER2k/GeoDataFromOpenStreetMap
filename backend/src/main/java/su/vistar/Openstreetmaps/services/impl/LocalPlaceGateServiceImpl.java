@@ -5,6 +5,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import su.vistar.Openstreetmaps.DTO.GatesDTO;
 import su.vistar.Openstreetmaps.DTO.GeoLocation;
 import su.vistar.Openstreetmaps.models.Employee;
 import su.vistar.Openstreetmaps.models.LocalPlaceGate;
@@ -90,6 +91,19 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         return null;
     }
 
+    @Override
+    public List<GatesDTO> getAllGatesByCity(String city) {
+        List<LocalPlaceGate> gatesList = localPlaceGateRepository.findAll();
+        List<GatesDTO> gatesDTOList = new ArrayList<>();
+
+        for (LocalPlaceGate gates : gatesList) {
+            GatesDTO dto = new GatesDTO(gates.getLongitude(), gates.getLatitude());
+            gatesDTOList.add(dto);
+        }
+
+        return gatesDTOList;
+    }
+
     private void processOverpassResponse(String response) {
         JSONObject jsonResponse = new JSONObject(response);
 
@@ -141,3 +155,4 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         return response.toString();
     }
 }
+
