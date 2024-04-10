@@ -1,10 +1,13 @@
 package su.vistar.Openstreetmaps.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import su.vistar.Openstreetmaps.DTO.GatesDTO;
 import su.vistar.Openstreetmaps.DTO.GeoLocation;
 import su.vistar.Openstreetmaps.models.Employee;
 import su.vistar.Openstreetmaps.models.LocalPlaceGate;
@@ -33,6 +36,34 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
     @Scheduled(cron = "0 0 20 * * *")
+    public void updateAllGatesAutomaticaly() {
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
+        //примерно центр Воронежа
+        double latitudeCurrentNode = 51.661535;
+        double longitudeCurrentNode = 39.200287;
+        //14 км радиуса, чтоб охватить весь Воронеж
+        int radiusMeters = 15000;
+        List<String> barriersType = new ArrayList<>();
+        barriersType.add("lift_gate");
+        barriersType.add("gate");
+        for (String barrier : barriersType) {
+            String query = "[out:json];" +
+                    "(node[barrier=" + barrier + "](around:" + radiusMeters + "," +
+                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
+                    "way[barrier=" + barrier + "](around:" + radiusMeters + "," +
+                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
+                    "relation[barrier=" + barrier + "](around:" + radiusMeters + "," +
+                    latitudeCurrentNode + "," + longitudeCurrentNode + "););" +
+                    "out;";
+            try {
+                String response = sendOverpassQuery(overpassUrl, query);
+                processOverpassResponse(response);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public void updateAllGates() {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
@@ -90,6 +121,23 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         return null;
     }
 
+    @Override
+    public List<GatesDTO> getAllGatesByCity(String city) {
+        List<LocalPlaceGate> gatesList = localPlaceGateRepository.findAll()
+                .stream()
+                .limit(50)
+                .toList();
+        List<GatesDTO> gatesDTOList = new ArrayList<>();
+
+        for (LocalPlaceGate gates : gatesList) {
+            GatesDTO dto = new GatesDTO(gates.getLongitude(), gates.getLatitude());
+            gatesDTOList.add(dto);
+        }
+        System.out.println(gatesDTOList);
+        return gatesDTOList;
+    }
+
+    @SneakyThrows(JSONException.class)
     private void processOverpassResponse(String response) {
         JSONObject jsonResponse = new JSONObject(response);
 
@@ -97,6 +145,10 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         for (int i = 0; i < elements.length(); i++) {
             JSONObject element = elements.getJSONObject(i);
             long id = element.getLong("id");
+
+            if(!element.has("lat")) {
+                continue;
+            }
 
             double lat = element.getDouble("lat");
             double lon = element.getDouble("lon");
@@ -141,3 +193,4 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         return response.toString();
     }
 }
+

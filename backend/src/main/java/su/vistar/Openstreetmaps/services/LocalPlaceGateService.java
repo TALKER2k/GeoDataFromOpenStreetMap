@@ -1,5 +1,6 @@
 package su.vistar.Openstreetmaps.services;
 
+import su.vistar.Openstreetmaps.DTO.GatesDTO;
 import su.vistar.Openstreetmaps.DTO.GeoLocation;
 import su.vistar.Openstreetmaps.models.LocalPlaceGate;
 
@@ -9,4 +10,5 @@ public interface LocalPlaceGateService {
     void updateAllGates();
 
     List<LocalPlaceGate> checkGatesAround(String username, GeoLocation geoLocation);
+    List<GatesDTO> getAllGatesByCity(String city);
 }
