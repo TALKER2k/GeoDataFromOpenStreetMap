@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.modelmapper.ModelMapper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.DTO.GatesDTO;
@@ -32,6 +33,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     private final LocalPlaceGateRepository localPlaceGateRepository;
     private final TelephoneService telephoneService;
     private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
@@ -123,14 +125,16 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
 
     @Override
     public List<GatesDTO> getAllGatesByCity(String city) {
-        List<LocalPlaceGate> gatesList = localPlaceGateRepository.findAll()
-                .stream()
-                .limit(50)
-                .toList();
+        List<LocalPlaceGate> gatesList = localPlaceGateRepository.findAll();
+//                .stream()
+//                .limit(50)
+//                .toList();
         List<GatesDTO> gatesDTOList = new ArrayList<>();
 
         for (LocalPlaceGate gates : gatesList) {
-            GatesDTO dto = new GatesDTO(gates.getLongitude(), gates.getLatitude());
+//            modelMapper.map(gates, GatesDTO.class);
+            GatesDTO dto = new GatesDTO(gates.getLongitude(), gates.getLatitude(),
+                    gates.getName(), gates.getPhoneNumber());
             gatesDTOList.add(dto);
         }
         System.out.println(gatesDTOList);

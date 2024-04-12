@@ -2,6 +2,8 @@ package su.vistar.Openstreetmaps.DTO;
 
 public record GatesDTO(
         Double longitude,
-        Double latitude
-)
-{}
+        Double latitude,
+        String name,
+        String phoneNumber
+) {
+}
