@@ -69,29 +69,20 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     @Override
     public void updateAllGates() {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
-        //примерно центр Воронежа
-        double latitudeCurrentNode = 51.661535;
-        double longitudeCurrentNode = 39.200287;
-        //14 км радиуса, чтоб охватить весь Воронеж
-        int radiusMeters = 15000;
-        List<String> barriersType = new ArrayList<>();
-        barriersType.add("lift_gate");
-        barriersType.add("gate");
-        for (String barrier : barriersType) {
-            String query = "[out:json];" +
-                    "area[\"ISO3166-1\"~\".*\"][admin_level=2];\n" +
-                    "(node[\"place\"=\"country\"](area););\n" +
-                    "out;";
+        String query = "[out:json];" +
+                "area[\"ISO3166-1\"~\".*\"][admin_level=2];\n" +
+                "(node[\"place\"=\"country\"](area););\n" +
+                "out;";
 //            String query = "[out:json];" +
 //                    "area[\"name\"=\"Portugal\"][admin_level=2];\n" +
 //                    "(node[\"place\"=\"city\"](area););\n" +
 //                    "out;";
-            try {
-                String response = sendOverpassQuery(overpassUrl, query);
-                processOverpassResponse(response);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        try {
+            String response = sendOverpassQuery(overpassUrl, query);
+            processOverpassResponse(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+
         }
     }
 
@@ -151,7 +142,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
             System.out.println(element);
             long id = element.getLong("id");
 
-            if(!element.has("lat")) {
+            if (!element.has("lat")) {
                 continue;
             }
 
@@ -171,8 +162,14 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
             if (tags.has("name:en")) {
                 System.out.println(tags.getString("name:en"));
             }
+            if (tags.has("name:ru")) {
+                System.out.println(tags.getString("name:ru"));
+            }
             if (tags.has("ISO3166-1")) {
                 System.out.println(tags.getString("ISO3166-1"));
+            }
+            if (tags.has("ISO3166-1:alpha2")) {
+                System.out.println(tags.getString("ISO3166-1:alpha2"));
             }
 
             localPlaceGateRepository.save(localPlaceGate);
