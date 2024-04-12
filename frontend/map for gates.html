@@ -11,9 +11,44 @@
             height: 600px;
             margin-top: 10px;
         }
+
         #cityInput {
             margin-right: 10px;
         }
+
+        .marker {
+            position: relative; /* Для правильного позиционирования содержимого */
+            width: 10px;
+            height: 10px;
+            background-color: red; /* Цвет маркера */
+            border-radius: 50%; /* Для круглого маркера */
+            text-align: center;
+            line-height: 20px;
+            cursor: pointer; /* Добавляем указатель при наведении */
+            border: 2px solid black;
+            box-sizing: border-box;
+        }
+
+        .marker:hover {
+            background-color: blue; /* Цвет маркера при наведении */
+        }
+
+        .marker-content {
+            background-color: white;
+            border: 1px solid black;
+            padding: 5px;
+            position: absolute;
+            top: 100%; /* Отображаем информацию ниже маркера */
+            left: 50%; /* Расположение информации относительно маркера */
+            transform: translateX(-50%); /* Центрирование информации относительно маркера */
+            z-index: 1000; /* Убеждаемся, что информация находится выше других элементов */
+            display: none; /* Изначально скрываем информацию */
+        }
+
+        .marker:hover .marker-content {
+            display: block; /* Показываем информацию при наведении на маркер */
+        }
+
     </style>
 </head>
 <body>
@@ -25,7 +60,6 @@
     <button onclick="updateGates()">Update Gates</button> <!-- Добавленная кнопка -->
 </div>
 <div id="map" class="map"></div>
-<ul id="gatesList"></ul>
 <script src="https://openlayers.org/en/v6.15.1/build/ol.js"></script>
 <script>
     var map = new ol.Map({
@@ -58,35 +92,38 @@
             });
     }
 
-    function addMarker(coordinates) {
-        var vectorSource = new ol.source.Vector();
-        var vectorLayer = new ol.layer.Vector({
-            source: vectorSource
+    function addMarker(coordinates, name, phoneNumber) {
+        var markerElement = document.createElement('div');
+        markerElement.className = 'marker';
+
+        var markerContent = document.createElement('div');
+        markerContent.className = 'marker-content'; // Добавляем класс для стилизации
+        markerContent.style.display = 'none'; // Изначально скрываем содержимое
+
+        // Добавляем информацию о маркере в созданный элемент
+        markerContent.textContent = 'Name: ' + name + '\nPhone: ' + phoneNumber;
+
+        // Прикрепляем информацию о маркере к элементу маркера
+        markerElement.appendChild(markerContent);
+
+        var marker = new ol.Overlay({
+            element: markerElement,
+            position: coordinates,
+            positioning: 'bottom-center',
+            offset: [0, 0] // Смещение для отображения над маркером
         });
 
-        map.addLayer(vectorLayer);
-
-        var marker = new ol.Feature({
-            geometry: new ol.geom.Point(coordinates)
+        // Добавляем обработчики событий для показа и скрытия информации при наведении
+        markerElement.addEventListener('mouseover', function() {
+            markerContent.style.display = 'block'; // Показываем информацию при наведении
         });
 
-        var markerStyle = new ol.style.Style({
-            image: new ol.style.Circle({
-                radius: 8, // Укажите здесь желаемый размер маркера
-                fill: new ol.style.Fill({
-                    color: 'red'
-                }),
-                stroke: new ol.style.Stroke({
-                    color: 'black',
-                    width: 2
-                })
-            })
+        markerElement.addEventListener('mouseout', function() {
+            markerContent.style.display = 'none'; // Скрываем информацию при уходе курсора
         });
 
-        marker.setStyle(markerStyle);
-        
-        vectorSource.addFeature(marker);
-}
+        map.addOverlay(marker); // Добавляем маркер на карту
+    }
 
     function searchCity() {
         var city = document.getElementById('cityInput').value;
@@ -95,41 +132,31 @@
             return;
         }
 
-             
+        fetch('http://localhost:8080/settings_gates/getAllGates?city=' + city, {
+            method: 'GET',
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    alert('No results found for the city: ' + city);
+                } else {
+                    // Clear previous markers and list items
+                    clearMarkers();
 
-      
+                    // Add markers for all gates and to the list
+                    data.forEach(gate => {
+                        var coordinates = [gate.latitude, gate.longitude];
+                        addMarker(ol.proj.fromLonLat(coordinates), gate.name, gate.phoneNumber);
+                    });
 
-fetch('http://localhost:8080/settings_gates/getAllGates?city=' + city, {
-    method: 'GET',
-})
-    .then(response => response.json())
-    .then(data => {
-        if (data.length === 0) {
-            alert('No results found for the city: ' + city);
-        } else {
-            // Clear previous markers and list items
-            clearMarkers();
-            document.getElementById('gatesList').innerHTML = '';
-
-            // Add markers for all gates and to the list
-            data.forEach(gate => {
-                var coordinates = [gate.latitude, gate.longitude];
-                addMarker(ol.proj.fromLonLat(coordinates));
-
-                // Create a list item for each gate
-                var listItem = document.createElement('li');
-                listItem.textContent = 'Gate: Longitude ' + gate.longitude + ', Latitude ' + gate.latitude;
-                document.getElementById('gatesList').appendChild(listItem);
+                    // Fit map view to all gates
+                    fitMapToGates(data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
-
-            // Fit map view to all gates
-            fitMapToGates(data);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-            }
+    }
 
     function clearMarkers() {
         var vectorLayers = map.getLayers().getArray().filter(layer => layer instanceof ol.layer.Vector);
@@ -141,17 +168,17 @@ fetch('http://localhost:8080/settings_gates/getAllGates?city=' + city, {
     function fitMapToGates(gates) {
         var coordinates = gates.map(gate => [gate.latitude, gate.longitude]);
         var extent = ol.extent.boundingExtent(coordinates.map(coord => ol.proj.fromLonLat(coord)));
-        map.getView().fit(extent, { padding: [50, 50, 50, 50] });
+        map.getView().fit(extent, {padding: [50, 50, 50, 50]});
     }
 
     function showMyLocation() {
         if ('geolocation' in navigator) {
-            navigator.geolocation.getCurrentPosition(function(position) {
+            navigator.geolocation.getCurrentPosition(function (position) {
                 var coordinates = [position.coords.longitude, position.coords.latitude];
                 var extent = ol.extent.boundingExtent([ol.proj.fromLonLat(coordinates)]);
-                map.getView().fit(extent, { padding: [50, 50, 50, 50] });
+                map.getView().fit(extent, {padding: [50, 50, 50, 50]});
                 addMarker(ol.proj.fromLonLat(coordinates));
-            }, function(error) {
+            }, function (error) {
                 console.error('Error getting user location:', error);
                 alert('Error getting user location.');
             });
