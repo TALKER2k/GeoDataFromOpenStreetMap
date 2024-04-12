@@ -79,13 +79,13 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         barriersType.add("gate");
         for (String barrier : barriersType) {
             String query = "[out:json];" +
-                    "(node[barrier=" + barrier + "](around:" + radiusMeters + "," +
-                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
-                    "way[barrier=" + barrier + "](around:" + radiusMeters + "," +
-                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
-                    "relation[barrier=" + barrier + "](around:" + radiusMeters + "," +
-                    latitudeCurrentNode + "," + longitudeCurrentNode + "););" +
+                    "area[\"ISO3166-1\"~\".*\"][admin_level=2];\n" +
+                    "(node[\"place\"=\"country\"](area););\n" +
                     "out;";
+//            String query = "[out:json];" +
+//                    "area[\"name\"=\"Portugal\"][admin_level=2];\n" +
+//                    "(node[\"place\"=\"city\"](area););\n" +
+//                    "out;";
             try {
                 String response = sendOverpassQuery(overpassUrl, query);
                 processOverpassResponse(response);
@@ -148,11 +148,14 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         JSONArray elements = jsonResponse.getJSONArray("elements");
         for (int i = 0; i < elements.length(); i++) {
             JSONObject element = elements.getJSONObject(i);
+            System.out.println(element);
             long id = element.getLong("id");
 
             if(!element.has("lat")) {
                 continue;
             }
+
+            System.out.println(element);
 
             double lat = element.getDouble("lat");
             double lon = element.getDouble("lon");
@@ -165,8 +168,11 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
             localPlaceGate.setUpdate_date(LocalDateTime.now());
 
             JSONObject tags = element.getJSONObject("tags");
-            if (tags.has("barrier")) {
-                localPlaceGate.setName(tags.getString("barrier"));
+            if (tags.has("name:en")) {
+                System.out.println(tags.getString("name:en"));
+            }
+            if (tags.has("ISO3166-1")) {
+                System.out.println(tags.getString("ISO3166-1"));
             }
 
             localPlaceGateRepository.save(localPlaceGate);
