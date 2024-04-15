@@ -22,5 +22,10 @@ public class LocalPlaceGate {
     private String phoneNumber;
     @Column(name = "update_date")
     private LocalDateTime update_date;
+    @Column(name = "city_location")
+    private String cityLocation;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "city_name")
+    private City city;
 }
 

@@ -10,8 +10,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.DTO.GatesDTO;
 import su.vistar.Openstreetmaps.DTO.GeoLocation;
+import su.vistar.Openstreetmaps.models.Country;
 import su.vistar.Openstreetmaps.models.Employee;
 import su.vistar.Openstreetmaps.models.LocalPlaceGate;
+import su.vistar.Openstreetmaps.repositories.CountryRepository;
 import su.vistar.Openstreetmaps.repositories.LocalPlaceGateRepository;
 import su.vistar.Openstreetmaps.repositories.UserRepository;
 import su.vistar.Openstreetmaps.services.LocalPlaceGateService;
@@ -33,7 +35,8 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     private final LocalPlaceGateRepository localPlaceGateRepository;
     private final TelephoneService telephoneService;
     private final UserRepository userRepository;
-    private final ModelMapper modelMapper;
+    private final CountryRepository countryRepository;
+//    private final ModelMapper modelMapper;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
@@ -59,7 +62,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
                     "out;";
             try {
                 String response = sendOverpassQuery(overpassUrl, query);
-                processOverpassResponse(response);
+                processOverpassResponseForCountry(response);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -69,21 +72,37 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     @Override
     public void updateAllGates() {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
-        String query = "[out:json];" +
-                "area[\"ISO3166-1\"~\".*\"][admin_level=2];\n" +
-                "(node[\"place\"=\"country\"](area););\n" +
-                "out;";
-//            String query = "[out:json];" +
-//                    "area[\"name\"=\"Portugal\"][admin_level=2];\n" +
-//                    "(node[\"place\"=\"city\"](area););\n" +
-//                    "out;";
-        try {
-            String response = sendOverpassQuery(overpassUrl, query);
-            processOverpassResponse(response);
-        } catch (Exception e) {
-            e.printStackTrace();
 
-        }
+        new Thread(() -> {
+            String query = "[out:json];" +
+                    "area[\"ISO3166-1\"~\".*\"][admin_level=2];\n" +
+                    "(node[\"place\"=\"country\"](area););\n" +
+                    "out;";
+            try {
+                String response = sendOverpassQuery(overpassUrl, query);
+                processOverpassResponseForCountry(response);
+            } catch (Exception e) {
+                e.printStackTrace();
+
+            }
+        }).start();
+
+//        List<String> queries = new ArrayList<>();
+//        queries.add(query);
+//        query = "[out:json];" +
+//                "area[\"name\"=\"Portugal\"][admin_level=2];\n" +
+//                "(node[\"place\"=\"city\"](area););\n" +
+//                "out;";
+//        queries.add(query);
+//        for (String q : queries) {
+//            try {
+//                String response = sendOverpassQuery(overpassUrl, q);
+//                processOverpassResponseForCountry(response);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//
+//            }
+//        }
     }
 
     @Override
@@ -117,9 +136,6 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     @Override
     public List<GatesDTO> getAllGatesByCity(String city) {
         List<LocalPlaceGate> gatesList = localPlaceGateRepository.findAll();
-//                .stream()
-//                .limit(50)
-//                .toList();
         List<GatesDTO> gatesDTOList = new ArrayList<>();
 
         for (LocalPlaceGate gates : gatesList) {
@@ -133,7 +149,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     }
 
     @SneakyThrows(JSONException.class)
-    private void processOverpassResponse(String response) {
+    private void processOverpassResponseForCountry(String response) {
         JSONObject jsonResponse = new JSONObject(response);
 
         JSONArray elements = jsonResponse.getJSONArray("elements");
@@ -142,37 +158,21 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
             System.out.println(element);
             long id = element.getLong("id");
 
-            if (!element.has("lat")) {
-                continue;
-            }
-
-            System.out.println(element);
-
-            double lat = element.getDouble("lat");
-            double lon = element.getDouble("lon");
-
-            LocalPlaceGate localPlaceGate = new LocalPlaceGate();
-            localPlaceGate.setGatesId(id);
-            localPlaceGate.setLatitude(lon);
-            localPlaceGate.setLongitude(lat);
-            localPlaceGate.setPhoneNumber("+79001234567");
-            localPlaceGate.setUpdate_date(LocalDateTime.now());
+            Country country = new Country();
+            country.setCountryId(id);
 
             JSONObject tags = element.getJSONObject("tags");
             if (tags.has("name:en")) {
-                System.out.println(tags.getString("name:en"));
-            }
-            if (tags.has("name:ru")) {
-                System.out.println(tags.getString("name:ru"));
+                country.setName(tags.getString("name:en"));
             }
             if (tags.has("ISO3166-1")) {
-                System.out.println(tags.getString("ISO3166-1"));
+                country.setAbbreviation(tags.getString("ISO3166-1"));
             }
             if (tags.has("ISO3166-1:alpha2")) {
-                System.out.println(tags.getString("ISO3166-1:alpha2"));
+                country.setAbbreviationAlpha2(tags.getString("ISO3166-1:alpha2"));
             }
 
-            localPlaceGateRepository.save(localPlaceGate);
+            countryRepository.save(country);
         }
     }
 
