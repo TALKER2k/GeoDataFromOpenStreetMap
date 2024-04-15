@@ -26,10 +26,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,8 +42,8 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
 //    private final ModelMapper modelMapper;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
-    private final ExecutorService executor2 = Executors.newFixedThreadPool(9);
-    private final ExecutorService executor3 = Executors.newFixedThreadPool(4);
+    private final ExecutorService executor2 = Executors.newFixedThreadPool(10);
+    private final ExecutorService executor3 = Executors.newFixedThreadPool(10);
 
     @Scheduled(cron = "0 0 19 * * *")
     public void updateAllGatesAutomaticaly() {
@@ -137,6 +134,8 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
                     String finalQuery = query;
                     executor2.submit(() -> {
                         try {
+                            Random random = new Random();
+                            Thread.sleep(500 + random.nextInt(1001));
                             String response = sendOverpassQuery(overpassUrl, finalQuery);
                             processOverpassResponseForCity(response, country);
                             System.out.println(count.incrementAndGet() + "/" + countryList.size());
@@ -158,7 +157,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
             throw new RuntimeException(e);
         }
 
-        Thread.sleep(10000);
+        Thread.sleep(300000); //5 min for sleep
 
 
         Thread gateUpdateDB = new Thread(() -> {
@@ -178,15 +177,19 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
                 }
 
                 try {
-                    executor3.submit(() -> {
+                    String finalQuery = query;
+                    executor3.submit(() ->
+                    {
+                        try {
+                            Random random = new Random();
+                            Thread.sleep(random.nextInt(1500));
+                            String response = sendOverpassQuery(overpassUrl, finalQuery);
+                            processOverpassResponseForGate(response, city);
+                            System.out.println(count.incrementAndGet() + "/" + cityList.size());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     });
-                    try {
-                        String response = sendOverpassQuery(overpassUrl, query);
-                        processOverpassResponseForGate(response, city);
-                        System.out.println(count.incrementAndGet() + "/" + cityList.size());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
