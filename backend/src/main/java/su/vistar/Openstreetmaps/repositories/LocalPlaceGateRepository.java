@@ -24,4 +24,6 @@ public interface LocalPlaceGateRepository extends JpaRepository<LocalPlaceGate, 
             @Param("gateLongitude") double gateLongitude,
             @Param("radiusInKm") double radiusInKm
     );
+    @Query(value = "SELECT * from local_places_lift_gates where city_id=:cityId", nativeQuery = true)
+    List<LocalPlaceGate> findGateByIdCity(@Param("cityId") long id);
 }

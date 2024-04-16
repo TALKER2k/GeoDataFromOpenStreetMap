@@ -45,7 +45,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     private final ExecutorService executor2 = Executors.newFixedThreadPool(10);
     private final ExecutorService executor3 = Executors.newFixedThreadPool(10);
 
-    @Scheduled(cron = "0 0 19 * * *")
+    @Scheduled(cron = "* 0/30 22 * * *")
     public void updateAllGatesAutomaticaly() {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         //примерно центр Воронежа
@@ -74,6 +74,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         }
     }
 
+    @Scheduled(cron = "* 0/34 22 * * *")
     @Override
     public void updateAllGates() throws InterruptedException {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
@@ -311,15 +312,20 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     }
 
     @Override
-    public List<GatesDTO> getAllGatesByCity(String city) {
-        List<LocalPlaceGate> gatesList = localPlaceGateRepository.findAll();
+    public List<GatesDTO> getAllGatesByCity(String city){
+        City City = cityRepository.findIdCity(city);
         List<GatesDTO> gatesDTOList = new ArrayList<>();
+        if (City == null ) return null;
+        List<LocalPlaceGate> gatesList = localPlaceGateRepository.findGateByIdCity(City.getCityId());
 
         for (LocalPlaceGate gates : gatesList) {
-//            modelMapper.map(gates, GatesDTO.class);
+
+            /*modelMapper.map(gates, GatesDTO.class);
             GatesDTO dto = new GatesDTO(gates.getLongitude(), gates.getLatitude(),
                     gates.getName(), gates.getPhoneNumber());
-            gatesDTOList.add(dto);
+            gatesDTOList.add(dto);*/
+            gatesDTOList.add(new GatesDTO(gates.getLongitude(),gates.getLatitude(),gates.getName(),gates.getPhoneNumber()));
+
         }
         System.out.println(gatesDTOList);
         return gatesDTOList;
