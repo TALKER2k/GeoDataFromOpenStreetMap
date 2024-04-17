@@ -137,7 +137,7 @@
         })
             .then(response => response.json())
             .then(data => {
-                if (data.length === 0) {
+                if (data === null) {
                     alert('No results found for the city: ' + city);
                 } else {
                     // Clear previous markers and list items

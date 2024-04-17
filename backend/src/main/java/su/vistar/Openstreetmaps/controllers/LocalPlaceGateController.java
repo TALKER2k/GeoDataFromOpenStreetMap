@@ -14,7 +14,7 @@ public class LocalPlaceGateController {
     private final LocalPlaceGateService localPlaceGateService;
 
     @GetMapping("/update")
-    public void updateAllGates() {
+    public void updateAllGates() throws InterruptedException {
         System.out.println("Method update start");
         localPlaceGateService.updateAllGates();
         System.out.println("Method update end");

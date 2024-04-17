@@ -62,3 +62,13 @@ databaseChangeLog:
         - sqlFile:
             path: 250320241940_006_add_table_localplace_bus_stop.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: 150420241737_007_add_location_column
+      author: Nikita Pushkin
+      comment: add tables country and city, and add column for gates
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: 150420241737_007_add_location_column.sql
+            relativeToChangelogFile: true
