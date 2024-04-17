@@ -313,7 +313,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
 
     @Override
     public List<GatesDTO> getAllGatesByCity(String city){
-        City City = cityRepository.findIdCity(city);
+        City City = cityRepository.findByName(city);
         List<GatesDTO> gatesDTOList = new ArrayList<>();
         if (City == null ) return null;
         List<LocalPlaceGate> gatesList = localPlaceGateRepository.findGateByIdCity(City.getCityId());
