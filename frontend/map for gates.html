@@ -143,7 +143,7 @@
                     // Clear previous markers and list items
                     clearMarkers();
 
-                    // Add markers for all gates and to the list
+                    // Add markers for all gates and to  the list
                     data.forEach(gate => {
                         var coordinates = [gate.latitude, gate.longitude];
                         addMarker(ol.proj.fromLonLat(coordinates), gate.name, gate.phoneNumber);
