@@ -1,17 +1,11 @@
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-import Form from 'react-bootstrap/Form';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Button from 'react-bootstrap/Button';
-import InputGroup from 'react-bootstrap/InputGroup';
-import ol from "ol/dist/ol";
-import { useEffect, useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import MapOL from './ol/MapOL.js';
+import "./App.css";
 
 function App() {
-    const [city, setCity] = useState('asas');
+    const [city, setCity] = useState('City');
     const mapRef = useRef(null);
 
     function searchCity() {
@@ -28,9 +22,9 @@ function App() {
                 if (data === null) {
                     alert('No results found for the city: ' + city);
                 } else {
+                    mapRef.current.clearMarkers();
                     data.forEach(gate => {
-                        if (mapRef.current !== null) { // Добавляем проверку на null
-                            const coordinates = [gate.latitude, gate.longitude];
+                        if (mapRef.current !== null) {
                             mapRef.current.addMarker(gate.latitude, gate.longitude, gate.phoneNumber, gate.name);
                         } else {
                             console.error('Map reference is null');
@@ -42,7 +36,7 @@ function App() {
                 console.error('Error:', error);
             });
     }
-
+    
     function updateGates() {
         fetch('http://localhost:8080/settings_gates/update', {
             method: 'GET',
@@ -60,15 +54,25 @@ function App() {
             });
     }
     function showMyLocation() {
-
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+              const { latitude, longitude } = position.coords;
+              mapRef.current.addMarker(position.coords.longitude, position.coords.latitude);
+              mapRef.current.centerMap(longitude, latitude);
+            }, (error) => {
+              console.error('Error getting current location:', error);
+            });
+          } else {
+            console.error('Geolocation is not supported by this browser.');
+          }
     }
     return (
         <div className="App">
-            <div>Ошибка:</div>
+            <span>City:  </span>
             <input name="city" onChange={(e) => setCity(e.target.value)} />
-            <Button onClick={searchCity} variant="primary">Search city</Button>
-            <Button onClick={updateGates} variant="primary">Update data</Button>
-            <Button onClick={showMyLocation} variant="primary">Your location</Button>
+            <Button className="button" onClick={searchCity} variant="primary">Search city</Button>
+            <Button className="button" onClick={updateGates} variant="primary">Update data</Button>
+            <Button className="button" onClick={showMyLocation} variant="primary">Your location</Button>
             <MapOL ref={mapRef} />
         </div>
     );
