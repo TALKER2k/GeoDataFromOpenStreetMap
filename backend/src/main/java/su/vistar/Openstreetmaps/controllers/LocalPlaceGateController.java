@@ -20,10 +20,10 @@ public class LocalPlaceGateController {
         System.out.println("Method update end");
     }
 
-    @CrossOrigin(origins = "*") // Замените "http://localhost:8080" на адрес вашего фронтенд-приложения
+    @CrossOrigin(origins = "*")
     @GetMapping("/getAllGates")
-    public List<GatesDTO> getAllGates(@RequestParam("city") String city) {
+    public List<GatesDTO> getAllGates(@RequestParam("city") Long cityId) {
         System.out.println("Method getAllGates start");
-        return localPlaceGateService.getAllGatesByCity(city);
+        return localPlaceGateService.getAllGatesByCity(cityId);
     }
 }

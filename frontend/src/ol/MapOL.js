@@ -38,7 +38,7 @@ class MapOL extends Component {
       layers: [osmLayer, vectorLayer],
       view: new View({
         center: [0, 0],
-        zoom: 5,
+        zoom: 4,
       }),
     });
 
@@ -56,6 +56,8 @@ class MapOL extends Component {
   addMarker(lon, lat, number, name) {
     const iconStyle = new Style({
       image: new Icon({
+        width: 25,
+        height: 30,
         src: 'https://openlayers.org/en/latest/examples/data/icon.png',
       }),
     });

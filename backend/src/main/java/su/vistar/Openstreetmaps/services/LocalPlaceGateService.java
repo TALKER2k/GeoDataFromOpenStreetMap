@@ -10,5 +10,5 @@ public interface LocalPlaceGateService {
     void updateAllGates() throws InterruptedException;
 
     List<LocalPlaceGate> checkGatesAround(String username, GeoLocation geoLocation);
-    List<GatesDTO> getAllGatesByCity(String city);
+    List<GatesDTO> getAllGatesByCity(Long city);
 }

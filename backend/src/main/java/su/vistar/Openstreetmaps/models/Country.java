@@ -1,6 +1,8 @@
 package su.vistar.Openstreetmaps.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,12 +21,14 @@ public class Country {
     @Column(name = "country_id", unique = true)
     private Long countryId;
     @Column(name = "country_name")
+    @NotNull
     private String name;
     @Column(name = "ISO3166_1")
     private String abbreviation;
     @Column(name = "ISO3166_1_alpha2")
     private String abbreviationAlpha2;
     @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
     private Set<City> cities;
 
     @Override
@@ -38,5 +42,16 @@ public class Country {
     @Override
     public int hashCode() {
         return Objects.hash(countryId, name, abbreviation, abbreviationAlpha2);
+    }
+
+    @Override
+    public String toString() {
+        return "Country{" +
+                "countryId=" + countryId +
+                ", name='" + name + '\'' +
+                ", abbreviation='" + abbreviation + '\'' +
+                ", abbreviationAlpha2='" + abbreviationAlpha2 + '\'' +
+                ", cities=" + cities.size() +
+                '}';
     }
 }
