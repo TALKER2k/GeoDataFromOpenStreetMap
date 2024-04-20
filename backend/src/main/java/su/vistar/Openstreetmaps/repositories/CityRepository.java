@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface CityRepository extends JpaRepository<City, Long> {
     City findByName(String city);
-    List<City> findByCountry(Country country);
+    List<City> findByCountryOrderByName(Country country);
 }

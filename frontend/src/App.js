@@ -17,29 +17,36 @@ function App() {
         async function fetchCountries() {
             try {
                 const response = await axios.get('http://localhost:8080/api/countries');
+                console.log('Countries:', response.data);
                 setCountries(response.data);
+                console.log('Страны:', response.data);
+                console.log('Страны после установки:', countries);
             } catch (error) {
                 console.error('Error fetching countries:', error);
             }
         }
-
+    
         fetchCountries();
     }, []);
-
+    
+    
     useEffect(() => {
-        async function fetchCities() {
+        function fetchCities() {
             if (selectedCountry) {
-                try {
-                    const response = await axios.get(`http://localhost:8080/api/countries/${selectedCountry}/cities`);
-                    setCities(response.data);
-                } catch (error) {
-                    console.error('Error fetching cities:', error);
-                }
+                axios.get(`http://localhost:8080/api/countries/${selectedCountry}/cities`)
+                    .then(response => {
+                        console.log('Cities:', response.data);
+                        setCities(response.data);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching cities:', error);
+                    });
             }
         }
-
+    
         fetchCities();
     }, [selectedCountry]);
+    
 
     const handleCountryChange = (event) => {
         setSelectedCountry(event.target.value);
@@ -116,8 +123,7 @@ function App() {
     return (
         <div className="App">
             <select className="button" value={selectedCountry} onChange={handleCountryChange}>
-                <option value="">Select country</option>
-                {countries.map(country => (
+                {Array.isArray(countries) && countries.map(country => (
                     <option key={country.countryId} value={country.countryId}>
                         {country.name}
                     </option>
@@ -132,9 +138,6 @@ function App() {
                 ))}
             </select>
             <Button className="button" onClick={searchCity} variant="primary">Submit</Button>
-            {/* <span>City:  </span>
-            <input name="city" onChange={(e) => setCity(e.target.value)} />
-            <Button className="button" onClick={searchCity} variant="primary">Search city</Button> */}
             <Button className="button" onClick={updateGates} variant="primary">Update data</Button>
             <Button className="button" onClick={showMyLocation} variant="primary">Your location</Button>
             <MapOL ref={mapRef} />

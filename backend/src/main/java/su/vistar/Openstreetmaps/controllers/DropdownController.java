@@ -19,13 +19,14 @@ public class DropdownController {
     @CrossOrigin(origins = "*")
     @GetMapping
     public List<Country> getCountryFront() {
+        System.out.println(dropdownService.getAllCountry());
         return dropdownService.getAllCountry();
     }
 
     @CrossOrigin(origins = "*")
     @GetMapping("/{selectedCountry}/cities")
     public List<City> getCityByCountryId(@PathVariable(value = "selectedCountry") Long countryId) {
+        System.out.println(dropdownService.getCityByCountry(countryId));
         return dropdownService.getCityByCountry(countryId);
     }
-
 }

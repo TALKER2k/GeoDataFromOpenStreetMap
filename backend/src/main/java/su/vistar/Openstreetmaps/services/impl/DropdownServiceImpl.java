@@ -21,13 +21,13 @@ public class DropdownServiceImpl implements DropdownService {
 
     @Override
     public List<Country> getAllCountry() {
-        return countryRepository.findAll();
+        return countryRepository.findAllByOrderByName();
     }
 
     @Override
     public List<City> getCityByCountry(Long id) {
         Country country = countryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Country is not found"));
-        return cityRepository.findByCountry(country);
+        return cityRepository.findByCountryOrderByName(country);
     }
 }
