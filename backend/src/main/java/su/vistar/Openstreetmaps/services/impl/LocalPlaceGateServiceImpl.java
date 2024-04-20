@@ -312,21 +312,16 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     }
 
     @Override
-    public List<GatesDTO> getAllGatesByCity(String city){
-        City City = cityRepository.findByName(city);
+    public List<GatesDTO> getAllGatesByCity(Long cityId){
+        City city = cityRepository.findById(cityId).orElseThrow(() -> new RuntimeException("not fount city"));
         List<GatesDTO> gatesDTOList = new ArrayList<>();
-        if (City == null ) return null;
-        List<LocalPlaceGate> gatesList = localPlaceGateRepository.findGateByIdCity(City.getCityId());
+
+        List<LocalPlaceGate> gatesList = localPlaceGateRepository.findGateByIdCity(city.getCityId());
 
         for (LocalPlaceGate gates : gatesList) {
-
-            /*modelMapper.map(gates, GatesDTO.class);
-            GatesDTO dto = new GatesDTO(gates.getLongitude(), gates.getLatitude(),
-                    gates.getName(), gates.getPhoneNumber());
-            gatesDTOList.add(dto);*/
             gatesDTOList.add(new GatesDTO(gates.getLongitude(),gates.getLatitude(),gates.getName(),gates.getPhoneNumber()));
-
         }
+
         System.out.println(gatesDTOList);
         return gatesDTOList;
     }
