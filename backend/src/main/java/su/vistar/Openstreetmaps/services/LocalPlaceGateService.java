@@ -11,4 +11,6 @@ public interface LocalPlaceGateService {
 
     List<LocalPlaceGate> checkGatesAround(String username, GeoLocation geoLocation);
     List<GatesDTO> getAllGatesByCity(Long city);
+
+    List<GatesDTO> getAllGatesByCityByOSM(Long cityId);
 }

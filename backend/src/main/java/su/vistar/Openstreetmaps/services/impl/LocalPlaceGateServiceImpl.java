@@ -326,6 +326,35 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         return gatesDTOList;
     }
 
+    @Override
+    public  List<GatesDTO> getAllGatesByCityByOSM(Long cityId){
+        City city = cityRepository.findById(cityId).orElseThrow(() -> new RuntimeException("not fount city"));
+        String cityName = city.getName();
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
+
+        String query = "[out:json];" +
+                "area[\"name\"=\"" + cityName + "\"];\n" +
+                "(node[barrier=lift_gate](area););\n" +
+                "out;";
+        List<GatesDTO> resultGates = new ArrayList<>();
+        try {
+            String response = sendOverpassQuery(overpassUrl, query);
+            JSONObject jsonResponse = new JSONObject(response);
+            JSONArray elements = jsonResponse.getJSONArray("elements");
+            for (int i = 0;i < elements.length();i++){
+                JSONObject element = elements.getJSONObject(i);
+                double lat = element.getDouble("lat");
+                double lon = element.getDouble("lon");
+                String name = "lift_gates";
+                String phoneNumber = "+7987654321";
+                resultGates.add(new GatesDTO(lat,lon,name,phoneNumber));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resultGates;
+    }
+
     @SneakyThrows(JSONException.class)
     private void processOverpassResponseForCountry(String response) {
         JSONObject jsonResponse = new JSONObject(response);

@@ -21,9 +21,19 @@ public class LocalPlaceGateController {
     }
 
     @CrossOrigin(origins = "*")
-    @GetMapping("/getAllGates")
+    @GetMapping("/getAllGatesByDB")
     public List<GatesDTO> getAllGates(@RequestParam("city") Long cityId) {
-        System.out.println("Method getAllGates start");
+        System.out.println("Method getAllGatesByDB start");
         return localPlaceGateService.getAllGatesByCity(cityId);
     }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/getAllGatesByOSM")
+    public List<GatesDTO> getAllGatesByOSM(@RequestParam("city") Long cityId) {
+        System.out.println("Method getAllGatesByOSM start");
+        return localPlaceGateService.getAllGatesByCityByOSM(cityId);
+    }
+
+
+
 }

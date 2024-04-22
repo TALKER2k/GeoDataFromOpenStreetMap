@@ -12,6 +12,8 @@ function App() {
     const [cities, setCities] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState('');
     const [selectedCity, setSelectedCity] = useState('');
+    const [TypesSearch , setTypesSearch] = useState([]);
+    const [selectedTypeSearch , setSelectedTypeSearch] = useState('');
 
     useEffect(() => {
         async function fetchCountries() {
@@ -56,14 +58,18 @@ function App() {
         setSelectedCity(event.target.value);
     };
 
+    const handleTypeSearchChange = (event) => {
+        setSelectedTypeSearch(event.target.value);
+    }
+
     const handleSubmit = () => {
         // Отправка выбранных идентификаторов страны и города на сервер
         console.log('Selected country id:', selectedCountry);
         console.log('Selected city id:', selectedCity);
     };
 
-    function searchCity() {
-        fetch('http://localhost:8080/settings_gates/getAllGates?city=' + selectedCity, {
+    function createRequestSearchCity(request) {
+        fetch(request, {
             method: 'GET',
         })
             .then(response => {
@@ -89,6 +95,16 @@ function App() {
             .catch(error => {
                 console.error('Error:', error);
             });
+    }
+
+    function searchCity() {
+        const dbRequest = 'http://localhost:8080/settings_gates/getAllGatesByDB?city=' + selectedCity;
+        const osmRequest = 'http://localhost:8080/settings_gates/getAllGatesByOSM?city=' + selectedCity;
+        if (selectedTypeSearch === '1') {
+            createRequestSearchCity(dbRequest);
+        } else {
+            createRequestSearchCity(osmRequest);
+        }
     }
 
     function updateGates() {
@@ -140,6 +156,11 @@ function App() {
             <Button className="button" onClick={searchCity} variant="primary">Submit</Button>
             <Button className="button" onClick={updateGates} variant="primary">Update data</Button>
             <Button className="button" onClick={showMyLocation} variant="primary">Your location</Button>
+            <select className="button" value={selectedTypeSearch} onChange={handleTypeSearchChange}>
+                <option value="">Select Type search</option>
+                <option value={1}>Data base</option>
+                <option value={2}>OSM</option>
+            </select>
             <MapOL ref={mapRef} />
         </div>
     );
