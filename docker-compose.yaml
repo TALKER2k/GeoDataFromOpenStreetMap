@@ -1,7 +1,7 @@
 version: "3.0"
 services:
-  db:
-    container_name: postgis-osm
+  db1:
+    container_name: postgres-routing-osm
     image: postgis/postgis
     restart: always
     ports:
@@ -9,5 +9,16 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: openstreetmap
+      POSTGRES_DB: routeosm
       POSTGRES_EXTENSION: hstore
+
+  db2:
+    container_name: postgres-gate-osm
+    image: library/postgres
+    restart: always
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gateosm

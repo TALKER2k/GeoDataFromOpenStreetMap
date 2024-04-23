@@ -4,7 +4,7 @@ server:
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/osm
+    url: jdbc:postgresql://localhost:5433/gateosm
     username: postgres
     password: postgres
 
