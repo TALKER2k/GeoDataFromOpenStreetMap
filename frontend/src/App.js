@@ -125,7 +125,7 @@ function App() {
     }
 
     function updateRoutes() {
-        fetch('http://localhost:8089/settings_gates/update', {
+        fetch('http://localhost:8089/route/updateBDRouteBus', {
             method: 'GET',
         })
             .then(response => {

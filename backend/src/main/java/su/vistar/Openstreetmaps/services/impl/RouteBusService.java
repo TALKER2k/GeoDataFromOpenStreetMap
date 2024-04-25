@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.models.RouteBus.Point;
 import su.vistar.Openstreetmaps.models.RouteBus.Route;
@@ -71,16 +72,16 @@ public class RouteBusService {
         }
     }
 
-    public Coordinate ResponseNode(Stop stop, Long Id) throws Exception{
+    public Coordinate ResponseNode(Stop stop, Long Id) throws Exception {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         String query = "[out:json];\n" +
-                "node("+ Long.toString(Id)+");\n" +
+                "node(" + Long.toString(Id) + ");\n" +
                 "out;";
         String response = sendOverpassQuery(overpassUrl, query);
         JSONObject jsonResponse = new JSONObject(response);
         JSONArray elements = jsonResponse.getJSONArray("elements");
         JSONObject element = elements.getJSONObject(0);
-        Coordinate coordinate = new Coordinate(element.getDouble("lon"),element.getDouble("lat"));
+        Coordinate coordinate = new Coordinate(element.getDouble("lon"), element.getDouble("lat"));
         return coordinate;
         //stop.setLon(element.getDouble("lon"));
         //stop.setLat(element.getDouble("lat"));
@@ -89,21 +90,21 @@ public class RouteBusService {
         stop.setName(tag.getString("name"));*/
     }
 
-    public List<Coordinate> ResponseWay(long Id)throws Exception{
+    public List<Coordinate> ResponseWay(long Id) throws Exception {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         String query = "[out:json];\n" +
-                "way("+ Long.toString(Id)+");\n" +
+                "way(" + Long.toString(Id) + ");\n" +
                 "(._;>;);\n" +
                 "out;";
         String response = sendOverpassQuery(overpassUrl, query);
         JSONObject jsonResponse = new JSONObject(response);
         JSONArray elements = jsonResponse.getJSONArray("elements");
         List<Coordinate> coordinates = new ArrayList<>();
-        if (elements.length() > 0){
-            for (int i = 0; i < elements.length();i++){
+        if (elements.length() > 0) {
+            for (int i = 0; i < elements.length(); i++) {
                 JSONObject element = elements.getJSONObject(i);
-                if(element.has("lon") && element.has("lat"))
-                    coordinates.add(new Coordinate(element.getDouble("lon"),element.getDouble("lat")));
+                if (element.has("lon") && element.has("lat"))
+                    coordinates.add(new Coordinate(element.getDouble("lon"), element.getDouble("lat")));
             }
         }
         return coordinates;
@@ -160,26 +161,30 @@ public class RouteBusService {
                         route.setRoute(tagsObject.get("route").getAsString());
                     }
                 }
+                routeRepository.save(route);
 
                 if ("way".equals(type)) {
                     Long wayId = member.getAsJsonObject().get("ref").getAsLong();
                     // Создание LineString из массива координат
-                    GeometryFactory geometryFactory = new GeometryFactory();
 
                     try {
                         List<Coordinate> coordinates = ResponseWay(wayId);
-                        Coordinate[] coordinates1 = coordinates.stream().toArray(Coordinate[]::new);;
+                        Coordinate[] coordinates1 = coordinates.stream().toArray(Coordinate[]::new);
+
+                        org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 4326);
+
                         LineString lineString = geometryFactory.createLineString(coordinates1);
+                        lineString.setSRID(4326);
+
                         lineStringEntity
                                 .setId(wayId)
                                 .setRouteId(route.getId())
                                 .setGeom(lineString);
+                        System.out.println(lineStringEntity);
                         lineStringRepository.save(lineStringEntity);
-                    }catch (Exception e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
-
-                    System.out.println(lineStringEntity);
                 }
 
                 if ("node".equals(type)) {
@@ -187,43 +192,44 @@ public class RouteBusService {
                         stop
                                 .setId(member.getAsJsonObject().get("ref").getAsLong())
                                 .setName(member.getAsJsonObject().get("role").getAsString());
-                        try{
+                        try {
                             Coordinate coordinate = ResponseNode(stop, stop.getId());
                             stop.setLat(coordinate.getX());
                             stop.setLon(coordinate.getY());
-                            GeometryFactory geometryFactory = new GeometryFactory();
-                            org.locationtech.jts.geom.Point point_ = geometryFactory.createPoint(coordinate);
-                            point
-                                    .setId(UUID.randomUUID())
-                                    .setStopId(stop.getId())
-                                    .setGeom(point_);
+
+                            org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 4326);
+                            org.locationtech.jts.geom.Point point_ = geometryFactory.createPoint(new Coordinate(coordinate.getX(), coordinate.getY()));
+                            point_.setSRID(4326);
+                            stopRepository.save(stop);
+
+                            point.setId(UUID.randomUUID());
+                            point.setStopId(stop.getId());
+                            point.setPoint(point_);
                             pointRepository.save(point);
-                        }catch (Exception e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
+
+                        System.out.println(stop);
+                        System.out.println(point);
 
                         routeStop
                                 .setId(UUID.randomUUID())
                                 .setRoute(route)
                                 .setStop(stop)
                                 .setSequence(count++);
-
-                        routeStopRepository.save(routeStop);
-                        stopRepository.save(stop);
-                        System.out.println(stop);
                         System.out.println(routeStop);
-                        System.out.println(point);
+
+
+//                        routeStopRepository.save(routeStop);
 
                     }
-                    routeRepository.save(route);
-                    System.out.println(route);
+//                    System.out.println(route);
 
                 }
             }
-
         }
     }
-
 
 
     private String sendOverpassQuery(String overpassUrl, String query) throws Exception {

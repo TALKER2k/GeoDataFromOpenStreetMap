@@ -1,5 +1,6 @@
 package su.vistar.Openstreetmaps.models.RouteBus;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -15,6 +16,7 @@ public class LineString {
     @Id
     private Long id;
     private Long routeId;
+    @Column(columnDefinition = "geometry(LineString,4326)")
     private Geometry geom;
 
     @Override

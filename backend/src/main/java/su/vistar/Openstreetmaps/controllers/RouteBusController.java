@@ -19,11 +19,14 @@ public class RouteBusController {
 
     @GetMapping("/updateBDRouteBus")
     public void updateBDRouteBus() {
+        System.out.println("updateBDRouteBus start...");
         routeBusService.updateAllBusStop();
+        System.out.println("updateBDRouteBus end...");
     }
 
     @GetMapping("/getAllRoutes")
     public List<Route> getRoutes() {
+        System.out.println("updateBDRouteBus start...");
         return routeBusService.getAllRoutes();
     }
 }
