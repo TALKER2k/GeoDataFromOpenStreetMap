@@ -1,6 +1,9 @@
-package su.vistar.Openstreetmaps;
+package su.vistar.Openstreetmaps.services.impl;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
@@ -22,14 +25,14 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class Main {
+public class RouteBusService {
     private final PointRepository pointRepository;
     private final RouteRepository routeRepository;
     private final RouteStopRepository routeStopRepository;
     private final StopRepository stopRepository;
     private final LineStringRepository lineStringRepository;
 
-    public Main(PointRepository pointRepository, RouteRepository routeRepository, RouteStopRepository routeStopRepository, StopRepository stopRepository, LineStringRepository lineStringRepository) {
+    public RouteBusService(PointRepository pointRepository, RouteRepository routeRepository, RouteStopRepository routeStopRepository, StopRepository stopRepository, LineStringRepository lineStringRepository) {
         this.pointRepository = pointRepository;
         this.routeRepository = routeRepository;
         this.routeStopRepository = routeStopRepository;
@@ -37,11 +40,11 @@ public class Main {
         this.lineStringRepository = lineStringRepository;
     }
 
-    public static void main(String[] args) {
-        updateAllBusStop();
+    public List<Route> getAllRoutes() {
+        return routeRepository.findAll();
     }
 
-    public static void updateAllBusStop() {
+    public void updateAllBusStop() {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         //примерно центр Воронежа
         double latitudeCurrentNode = 51.661535;
@@ -50,7 +53,6 @@ public class Main {
         int radiusMeters = 12000;
         List<String> barriersType = new ArrayList<>();
         barriersType.add("stop_position");
-//        barriersType.add("stop_position");
         for (String barrier : barriersType) {
             String query = "[out:json];" +
                     "(relation[route=bus](around:" + radiusMeters + "," +
@@ -69,17 +71,7 @@ public class Main {
         }
     }
 
-//    private LineString createLineString(RouteData routeData) {
-//        GeometryFactory geometryFactory = new GeometryFactory();
-//        List<NodeData> nodes = routeData.getNodes();
-//        Coordinate[] coordinates = new Coordinate[nodes.size()];
-//        for (int i = 0; i < nodes.size(); i++) {
-//            coordinates[i] = nodes.get(i).getCoordinate();
-//        }
-//        return geometryFactory.createLineString(coordinates);
-//    }
-
-    public static Coordinate ResponseNode(Stop stop,Long Id) throws Exception{
+    public Coordinate ResponseNode(Stop stop, Long Id) throws Exception{
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         String query = "[out:json];\n" +
                 "node("+ Long.toString(Id)+");\n" +
@@ -97,7 +89,7 @@ public class Main {
         stop.setName(tag.getString("name"));*/
     }
 
-    public static List<Coordinate> ResponseWay(long Id)throws Exception{
+    public List<Coordinate> ResponseWay(long Id)throws Exception{
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         String query = "[out:json];\n" +
                 "way("+ Long.toString(Id)+");\n" +
@@ -117,7 +109,7 @@ public class Main {
         return coordinates;
     }
 
-    private static void processOverpassResponse(String response) {
+    private void processOverpassResponse(String response) {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         JSONObject jsonResponse = new JSONObject(response);
 
@@ -182,7 +174,7 @@ public class Main {
                                 .setId(wayId)
                                 .setRouteId(route.getId())
                                 .setGeom(lineString);
-                        //lineStringRepository.save(lineStringEntity);
+                        lineStringRepository.save(lineStringEntity);
                     }catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -195,20 +187,20 @@ public class Main {
                         stop
                                 .setId(member.getAsJsonObject().get("ref").getAsLong())
                                 .setName(member.getAsJsonObject().get("role").getAsString());
-                                try{
-                                    Coordinate coordinate = ResponseNode(stop, stop.getId());
-                                    stop.setLat(coordinate.getX());
-                                    stop.setLon(coordinate.getY());
-                                    GeometryFactory geometryFactory = new GeometryFactory();
-                                    org.locationtech.jts.geom.Point point_ = geometryFactory.createPoint(coordinate);
-                                    point
-                                            .setId(UUID.randomUUID())
-                                            .setStopId(stop.getId())
-                                            .setGeom(point_);
-                                    //pointRepository.save(point);
-                                }catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                        try{
+                            Coordinate coordinate = ResponseNode(stop, stop.getId());
+                            stop.setLat(coordinate.getX());
+                            stop.setLon(coordinate.getY());
+                            GeometryFactory geometryFactory = new GeometryFactory();
+                            org.locationtech.jts.geom.Point point_ = geometryFactory.createPoint(coordinate);
+                            point
+                                    .setId(UUID.randomUUID())
+                                    .setStopId(stop.getId())
+                                    .setGeom(point_);
+                            pointRepository.save(point);
+                        }catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
                         routeStop
                                 .setId(UUID.randomUUID())
@@ -216,90 +208,25 @@ public class Main {
                                 .setStop(stop)
                                 .setSequence(count++);
 
-                        //routeStopRepository.save(routeStop);
-                        //stopRepository.save(stop);
+                        routeStopRepository.save(routeStop);
+                        stopRepository.save(stop);
                         System.out.println(stop);
                         System.out.println(routeStop);
                         System.out.println(point);
 
                     }
-                    //routeRepository.save(route);
+                    routeRepository.save(route);
                     System.out.println(route);
 
                 }
             }
 
         }
-
-        JSONArray eeee = jsonResponse.getJSONArray("elements");
-        for (
-                int i = 0; i < eeee.length(); i++) {
-            JSONObject element = eeee.getJSONObject(i);
-
-//            System.out.println(element);
-            GeometryFactory geometryFactory = new GeometryFactory();
-
-            JSONArray members = element.getJSONArray("members");
-            // тут нод и вей
-//            System.out.println(members);
-
-            JsonElement el = JsonParser.parseString(String.valueOf(element));
-            JsonObject jsonObject = el.getAsJsonObject();
-
-//            System.out.println(jsonObject);
-//            for (int j = 0; j < jsonObject.size(); j++) {
-//                JSONObject member = members.getJSONObject(i);
-
-//            System.out.println("=========================================");
-//            System.out.println(route);
-//            System.out.println("=========================================");
-
-
-//                System.out.println(member);
-//                System.out.println("=========================================");
-
-
-//                route = routeRepository.save(route);
-
-//                List<LineString> lineString = new ArrayList<>();
-//                LineString lineStringEntity = new LineString()
-//                        .setRouteId(route.getId())
-//                        .setGeom(lineString);
-//                entityManager.persist(lineStringEntity);
-
-
-//                JsonElement el = JsonParser.parseString(e);
-//                JsonObject jsonObject = element.getAsJsonObject();
-//                JsonArray membersArray = jsonObject.getAsJsonArray("members");
-
-//                for (NodeData nodeData : member.getNodes()) {
-//                    if ("stop".equals(nodeData.getRole())) {
-//                        Stop stop = new Stop()
-//                                .setName("Unnamed Stop") // You may want to change this to actual name
-//                                .setLat(nodeData.getLat())
-//                                .setLon(nodeData.getLon());
-//                        stop = stopRepository.save(stop);
-//
-//                        Point point = geometryFactory.createPoint(nodeData.getCoordinate());
-//                        PointEntity pointEntity = new PointEntity()
-//                                .setStopId(stop.getId())
-//                                .setGeom(point);
-//                        entityManager.persist(pointEntity);
-//
-//                        RouteStop routeStop = new RouteStop()
-//                                .setRouteId(route.getId())
-//                                .setStopId(stop.getId());
-//                        routeStopRepository.save(routeStop);
-//                    }
-//                    // Handle other node types if needed
-//                }
-        }
-
     }
 
 
 
-    private static String sendOverpassQuery(String overpassUrl, String query) throws Exception {
+    private String sendOverpassQuery(String overpassUrl, String query) throws Exception {
         URL url = new URL(overpassUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
