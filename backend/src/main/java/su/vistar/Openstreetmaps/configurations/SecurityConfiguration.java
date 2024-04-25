@@ -40,10 +40,11 @@ public class SecurityConfiguration {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .requestMatchers("/auth/login").permitAll()
-                .requestMatchers("/auth/register").permitAll()
-                .requestMatchers("/auth/registerAdmin/**").hasAuthority(SecurityConstants.USER)
-                .anyRequest().authenticated()
+                .requestMatchers("/**").permitAll()
+//                .requestMatchers("/auth/login").permitAll()
+//                .requestMatchers("/auth/register").permitAll()
+//                .requestMatchers("/auth/registerAdmin/**").hasAuthority(SecurityConstants.USER)
+//                .anyRequest().authenticated()
                 .and()
                 .httpBasic();
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
