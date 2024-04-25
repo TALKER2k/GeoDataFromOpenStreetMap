@@ -14,11 +14,13 @@ public class Route {
     @Id
     private Long id;
     private String name;
+    @Column(name = "from_location")
     private String from;
+    @Column(name = "to_location")
     private String to;
     private String network;
     private String operator;
-    @Column(name = "public_transport:version")
+    @Column(name = "public_transport_version")
     private Integer publicTransport;
     private String ref;
     private String route;

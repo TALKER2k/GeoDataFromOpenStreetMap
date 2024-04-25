@@ -14,16 +14,21 @@ public class RouteStop {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID id;
-    private Long routeId;
-    private Long stopId;
+    @ManyToOne
+    @JoinColumn(name = "route_id")
+    private Route route;
+
+    @ManyToOne
+    @JoinColumn(name = "stop_id")
+    private Stop stop;
     private Integer sequence;
 
     @Override
     public String toString() {
         return "RouteStop{" +
                 "id=" + id +
-                ", routeId=" + routeId +
-                ", stopId=" + stopId +
+                ", routeId=" + route.getId() +
+                ", stopId=" + stop.getId() +
                 ", sequence=" + sequence +
                 '}';
     }

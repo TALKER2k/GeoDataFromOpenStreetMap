@@ -62,3 +62,13 @@ databaseChangeLog:
         - sqlFile:
             path: 250320241940_006_add_table_localplace_bus_stop.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: 250420241517_007_create_route_bu_tables
+      author: Ilya Stinenko
+      comment: add table route bus
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: 250420241517_007_create_route_bu_tables.sql
+            relativeToChangelogFile: true

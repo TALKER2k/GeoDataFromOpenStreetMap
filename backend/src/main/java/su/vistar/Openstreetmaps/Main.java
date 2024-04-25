@@ -156,8 +156,8 @@ public class Main {
 
                         routeStop
                                 .setId(UUID.randomUUID())
-                                .setRouteId(route.getId())
-                                .setStopId(stop.getId())
+                                .setRoute(route)
+                                .setStop(stop)
                                 .setSequence(count++);
 
                         GeometryFactory geometryFactory = new GeometryFactory();
