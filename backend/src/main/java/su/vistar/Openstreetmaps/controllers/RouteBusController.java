@@ -1,8 +1,7 @@
 package su.vistar.Openstreetmaps.controllers;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import su.vistar.Openstreetmaps.models.RouteBus.LineString;
 import su.vistar.Openstreetmaps.models.RouteBus.Route;
 import su.vistar.Openstreetmaps.services.impl.RouteBusService;
 
@@ -24,9 +23,16 @@ public class RouteBusController {
         System.out.println("updateBDRouteBus end...");
     }
 
+    @CrossOrigin(origins = "*")
     @GetMapping("/getAllRoutes")
     public List<Route> getRoutes() {
         System.out.println("updateBDRouteBus start...");
         return routeBusService.getAllRoutes();
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("getLinesByRouteId/{id}")
+    public List<LineString> getLinesByRouteId(@PathVariable("id") Long id) {
+        return routeBusService.getWaysByRouteId(id);
     }
 }

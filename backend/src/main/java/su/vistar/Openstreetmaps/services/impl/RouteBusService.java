@@ -45,6 +45,10 @@ public class RouteBusService {
         return routeRepository.findAll();
     }
 
+    public List<su.vistar.Openstreetmaps.models.RouteBus.LineString> getWaysByRouteId(Long id) {
+        return lineStringRepository.findByRouteId(id);
+    }
+
     public void updateAllBusStop() {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         //примерно центр Воронежа
