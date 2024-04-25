@@ -14,8 +14,8 @@ public class Stop {
     @Id
     private Long id;
     private String name;
-    private float lat;
-    private float lon;
+    private double lat;
+    private double lon;
 
     @OneToMany(mappedBy = "stop", cascade = CascadeType.ALL)
     private Set<RouteStop> routeStops;

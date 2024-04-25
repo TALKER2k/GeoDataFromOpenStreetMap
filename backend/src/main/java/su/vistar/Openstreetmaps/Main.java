@@ -6,10 +6,12 @@ import org.json.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
+import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.models.RouteBus.Point;
 import su.vistar.Openstreetmaps.models.RouteBus.Route;
 import su.vistar.Openstreetmaps.models.RouteBus.RouteStop;
 import su.vistar.Openstreetmaps.models.RouteBus.Stop;
+import su.vistar.Openstreetmaps.repositories.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -19,7 +21,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Service
 public class Main {
+    private final PointRepository pointRepository;
+    private final RouteRepository routeRepository;
+    private final RouteStopRepository routeStopRepository;
+    private final StopRepository stopRepository;
+    private final LineStringRepository lineStringRepository;
+
+    public Main(PointRepository pointRepository, RouteRepository routeRepository, RouteStopRepository routeStopRepository, StopRepository stopRepository, LineStringRepository lineStringRepository) {
+        this.pointRepository = pointRepository;
+        this.routeRepository = routeRepository;
+        this.routeStopRepository = routeStopRepository;
+        this.stopRepository = stopRepository;
+        this.lineStringRepository = lineStringRepository;
+    }
+
     public static void main(String[] args) {
         updateAllBusStop();
     }
@@ -62,14 +79,51 @@ public class Main {
 //        return geometryFactory.createLineString(coordinates);
 //    }
 
+    public static Coordinate ResponseNode(Stop stop,Long Id) throws Exception{
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
+        String query = "[out:json];\n" +
+                "node("+ Long.toString(Id)+");\n" +
+                "out;";
+        String response = sendOverpassQuery(overpassUrl, query);
+        JSONObject jsonResponse = new JSONObject(response);
+        JSONArray elements = jsonResponse.getJSONArray("elements");
+        JSONObject element = elements.getJSONObject(0);
+        Coordinate coordinate = new Coordinate(element.getDouble("lon"),element.getDouble("lat"));
+        return coordinate;
+        //stop.setLon(element.getDouble("lon"));
+        //stop.setLat(element.getDouble("lat"));
+        /*JSONArray tags = element.getJSONArray("tags");
+        JSONObject tag = tags.getJSONObject(0);
+        stop.setName(tag.getString("name"));*/
+    }
+
+    public static List<Coordinate> ResponseWay(long Id)throws Exception{
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
+        String query = "[out:json];\n" +
+                "way("+ Long.toString(Id)+");\n" +
+                "(._;>;);\n" +
+                "out;";
+        String response = sendOverpassQuery(overpassUrl, query);
+        JSONObject jsonResponse = new JSONObject(response);
+        JSONArray elements = jsonResponse.getJSONArray("elements");
+        List<Coordinate> coordinates = new ArrayList<>();
+        if (elements.length() > 0){
+            for (int i = 0; i < elements.length();i++){
+                JSONObject element = elements.getJSONObject(i);
+                if(element.has("lon") && element.has("lat"))
+                    coordinates.add(new Coordinate(element.getDouble("lon"),element.getDouble("lat")));
+            }
+        }
+        return coordinates;
+    }
+
     private static void processOverpassResponse(String response) {
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
         JSONObject jsonResponse = new JSONObject(response);
 
         Gson gson = new Gson();
         JsonObject osmObject = gson.fromJson(response, JsonObject.class);
         JsonArray elements = osmObject.getAsJsonArray("elements");
-
-        Coordinate[] coordinates = new Coordinate[]{new Coordinate(0, 0), new Coordinate(0, 0)};
 
         for (JsonElement element : elements) {
             JsonObject jsonElement = element.getAsJsonObject();
@@ -119,27 +173,21 @@ public class Main {
                     Long wayId = member.getAsJsonObject().get("ref").getAsLong();
                     // Создание LineString из массива координат
                     GeometryFactory geometryFactory = new GeometryFactory();
-                    LineString lineString = geometryFactory.createLineString(coordinates);
-                    lineStringEntity
-                            .setId(wayId)
-                            .setRouteId(route.getId())
-                            .setGeom(lineString);
+
+                    try {
+                        List<Coordinate> coordinates = ResponseWay(wayId);
+                        Coordinate[] coordinates1 = coordinates.stream().toArray(Coordinate[]::new);;
+                        LineString lineString = geometryFactory.createLineString(coordinates1);
+                        lineStringEntity
+                                .setId(wayId)
+                                .setRouteId(route.getId())
+                                .setGeom(lineString);
+                        //lineStringRepository.save(lineStringEntity);
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
                     System.out.println(lineStringEntity);
-
-                    // TODO запрос на получение всех точек в линии, по ним построить саму линию
-
-//                    JsonArray nodes = member.getAsJsonObject().getAsJsonArray("node");
-//                    if (nodes != null && nodes.size() >= 2) {
-//                        coordinates = new Coordinate[nodes.size()];
-//                        for (int i = 0; i < nodes.size(); i++) {
-//                            long nodeId = nodes.get(i).getAsLong();
-//                            // Здесь нужно получить координаты по nodeId из вашего источника данных OSM
-//                            // Например, извлечь узлы с соответствующими идентификаторами из другого узла JSON или из базы данных
-//                            // Преобразовать их в объекты типа Coordinate и добавить в массив :)
-//                        }
-//                    }
-//                    System.out.println(lineStringEntity);
                 }
 
                 if ("node".equals(type)) {
@@ -147,12 +195,20 @@ public class Main {
                         stop
                                 .setId(member.getAsJsonObject().get("ref").getAsLong())
                                 .setName(member.getAsJsonObject().get("role").getAsString());
-
-                        // TODO запрос на получение координат остановки
-
-//                                .setLat()
-//                                .setLon()
-//                                .setRouteStops(route);
+                                try{
+                                    Coordinate coordinate = ResponseNode(stop, stop.getId());
+                                    stop.setLat(coordinate.getX());
+                                    stop.setLon(coordinate.getY());
+                                    GeometryFactory geometryFactory = new GeometryFactory();
+                                    org.locationtech.jts.geom.Point point_ = geometryFactory.createPoint(coordinate);
+                                    point
+                                            .setId(UUID.randomUUID())
+                                            .setStopId(stop.getId())
+                                            .setGeom(point_);
+                                    //pointRepository.save(point);
+                                }catch (Exception e) {
+                                    e.printStackTrace();
+                                }
 
                         routeStop
                                 .setId(UUID.randomUUID())
@@ -160,23 +216,19 @@ public class Main {
                                 .setStop(stop)
                                 .setSequence(count++);
 
-                        GeometryFactory geometryFactory = new GeometryFactory();
-                        LineString lineString = geometryFactory.createLineString(coordinates);
-                        // TODO то же самое, нужны координаты остановки
-                        point
-                                .setId(UUID.randomUUID())
-                                .setStopId(stop.getId())
-                                .setGeom(lineString);
-
+                        //routeStopRepository.save(routeStop);
+                        //stopRepository.save(stop);
                         System.out.println(stop);
                         System.out.println(routeStop);
                         System.out.println(point);
+
                     }
+                    //routeRepository.save(route);
                     System.out.println(route);
 
-                    // TODO сохраняем сущности в самом конце(тут)
                 }
             }
+
         }
 
         JSONArray eeee = jsonResponse.getJSONArray("elements");
@@ -244,6 +296,8 @@ public class Main {
         }
 
     }
+
+
 
     private static String sendOverpassQuery(String overpassUrl, String query) throws Exception {
         URL url = new URL(overpassUrl);
