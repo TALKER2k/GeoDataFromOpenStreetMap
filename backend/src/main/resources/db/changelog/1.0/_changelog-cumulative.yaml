@@ -64,11 +64,11 @@ databaseChangeLog:
             relativeToChangelogFile: true
 
   - changeSet:
-      id: 150420241737_007_add_location_column
-      author: Nikita Pushkin
-      comment: add tables country and city, and add column for gates
+      id: 250420241517_007_create_route_bu_tables
+      author: Ilya Stinenko
+      comment: add table route bus
       runOnChange: true
       changes:
         - sqlFile:
-            path: 150420241737_007_add_location_column.sql
+            path: 250420241517_007_create_route_bu_tables.sql
             relativeToChangelogFile: true

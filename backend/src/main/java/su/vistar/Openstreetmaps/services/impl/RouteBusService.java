@@ -9,14 +9,12 @@ import org.json.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.models.RouteBus.Point;
 import su.vistar.Openstreetmaps.models.RouteBus.Route;
 import su.vistar.Openstreetmaps.models.RouteBus.RouteStop;
 import su.vistar.Openstreetmaps.models.RouteBus.Stop;
 import su.vistar.Openstreetmaps.repositories.*;
-import su.vistar.Openstreetmaps.services.LocalPlaceBusStopService;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -27,15 +25,14 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
-
+public class RouteBusService {
     private final PointRepository pointRepository;
     private final RouteRepository routeRepository;
     private final RouteStopRepository routeStopRepository;
     private final StopRepository stopRepository;
     private final LineStringRepository lineStringRepository;
 
-    public LocalPlaceBusStopServiceImpl(PointRepository pointRepository, RouteRepository routeRepository, RouteStopRepository routeStopRepository, StopRepository stopRepository, LineStringRepository lineStringRepository) {
+    public RouteBusService(PointRepository pointRepository, RouteRepository routeRepository, RouteStopRepository routeStopRepository, StopRepository stopRepository, LineStringRepository lineStringRepository) {
         this.pointRepository = pointRepository;
         this.routeRepository = routeRepository;
         this.routeStopRepository = routeStopRepository;
@@ -43,11 +40,12 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
         this.lineStringRepository = lineStringRepository;
     }
 
-    static String overpassUrl = "https://overpass-api.de/api/interpreter";
+    public List<Route> getAllRoutes() {
+        return routeRepository.findAll();
+    }
 
-    @Override
-    @Scheduled(cron = "0 0 20 * * *")
     public void updateAllBusStop() {
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
         //примерно центр Воронежа
         double latitudeCurrentNode = 51.661535;
         double longitudeCurrentNode = 39.200287;
@@ -55,7 +53,6 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
         int radiusMeters = 12000;
         List<String> barriersType = new ArrayList<>();
         barriersType.add("stop_position");
-//        barriersType.add("stop_position");
         for (String barrier : barriersType) {
             String query = "[out:json];" +
                     "(relation[route=bus](around:" + radiusMeters + "," +
@@ -74,39 +71,16 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
         }
     }
 
-    private String sendOverpassQuery(String overpassUrl, String query) throws Exception {
-        URL url = new URL(overpassUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setDoOutput(true);
-
-        connection.getOutputStream().write(("data=" + query).getBytes("UTF-8"));
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
-        reader.close();
-
-        connection.disconnect();
-
-        return response.toString();
-    }
-
-    public Coordinate ResponseNode(Stop stop, Long Id) throws Exception {
+    public Coordinate ResponseNode(Stop stop, Long Id) throws Exception{
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
         String query = "[out:json];\n" +
-                "node(" + Long.toString(Id) + ");\n" +
+                "node("+ Long.toString(Id)+");\n" +
                 "out;";
         String response = sendOverpassQuery(overpassUrl, query);
         JSONObject jsonResponse = new JSONObject(response);
         JSONArray elements = jsonResponse.getJSONArray("elements");
         JSONObject element = elements.getJSONObject(0);
-        Coordinate coordinate = new Coordinate(element.getDouble("lon"), element.getDouble("lat"));
+        Coordinate coordinate = new Coordinate(element.getDouble("lon"),element.getDouble("lat"));
         return coordinate;
         //stop.setLon(element.getDouble("lon"));
         //stop.setLat(element.getDouble("lat"));
@@ -136,6 +110,7 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
     }
 
     private void processOverpassResponse(String response) {
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
         JSONObject jsonResponse = new JSONObject(response);
 
         Gson gson = new Gson();
@@ -199,7 +174,7 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
                                 .setId(wayId)
                                 .setRouteId(route.getId())
                                 .setGeom(lineString);
-                        //lineStringRepository.save(lineStringEntity);
+                        lineStringRepository.save(lineStringEntity);
                     }catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -212,7 +187,7 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
                         stop
                                 .setId(member.getAsJsonObject().get("ref").getAsLong())
                                 .setName(member.getAsJsonObject().get("role").getAsString());
-                        try {
+                        try{
                             Coordinate coordinate = ResponseNode(stop, stop.getId());
                             stop.setLat(coordinate.getX());
                             stop.setLon(coordinate.getY());
@@ -222,8 +197,8 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
                                     .setId(UUID.randomUUID())
                                     .setStopId(stop.getId())
                                     .setGeom(point_);
-                            //pointRepository.save(point);
-                        } catch (Exception e) {
+                            pointRepository.save(point);
+                        }catch (Exception e) {
                             e.printStackTrace();
                         }
 
@@ -247,5 +222,31 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
             }
 
         }
+    }
+
+
+
+    private String sendOverpassQuery(String overpassUrl, String query) throws Exception {
+        URL url = new URL(overpassUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setDoOutput(true);
+
+        connection.getOutputStream().write(("data=" + query).getBytes("UTF-8"));
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        StringBuilder response = new StringBuilder();
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        reader.close();
+
+        connection.disconnect();
+
+        return response.toString();
     }
 }
