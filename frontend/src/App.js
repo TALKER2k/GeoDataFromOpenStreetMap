@@ -141,7 +141,7 @@ function App() {
     
             // Для каждого маршрута получаем связанные с ним линии
             data.forEach(route => {
-                fetch(`http://localhost:8089/route/getLinesByRouteId/${route.id}`, {
+                fetch(`http://localhost:8089/route/getLinesByRouteId/1759247`, {
                     method: 'GET',
                 })
                 .then(response => {
@@ -154,10 +154,14 @@ function App() {
                 .then(lines => {
                     // Обработка полученных данных о линиях
                     console.log('Lines for route', route.id + ':', lines);
-                    lines.forEach(line => {
+                    lines.forEach(coordinatesArray => {
+                        const line = coordinatesArray.map(coord => ({
+                          lon: coord.x,
+                          lat: coord.y
+                        }));
                         mapRef.current.drawLine(line);
-                    });
                 })
+            })
                 .catch(error => {
                     console.error('Error:', error);
                     alert('An error occurred while fetching lines for route ' + route.id);

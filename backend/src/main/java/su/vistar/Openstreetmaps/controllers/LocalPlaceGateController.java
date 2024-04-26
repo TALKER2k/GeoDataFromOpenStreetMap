@@ -13,6 +13,7 @@ import java.util.List;
 public class LocalPlaceGateController {
     private final LocalPlaceGateService localPlaceGateService;
 
+    @CrossOrigin(origins = "*")
     @GetMapping("/update")
     public void updateAllGates() throws InterruptedException {
         System.out.println("Method update start");

@@ -6,10 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.geom.*;
 import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.models.RouteBus.Point;
 import su.vistar.Openstreetmaps.models.RouteBus.Route;
@@ -45,8 +42,12 @@ public class RouteBusService {
         return routeRepository.findAll();
     }
 
-    public List<su.vistar.Openstreetmaps.models.RouteBus.LineString> getWaysByRouteId(Long id) {
-        return lineStringRepository.findByRouteId(id);
+    public List<Coordinate[]> getWaysByRouteId(Long id) {
+        List<su.vistar.Openstreetmaps.models.RouteBus.LineString> lineStrings =
+                lineStringRepository.findByRouteId(id);
+        return lineStrings.stream()
+                .map(line -> line.getGeom().getCoordinates())
+                .toList();
     }
 
     public void updateAllBusStop() {

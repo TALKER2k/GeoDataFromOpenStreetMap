@@ -14,6 +14,8 @@ import Overlay from 'ol/Overlay';
 import './MapStyle.css';
 import LineString from 'ol/geom/LineString';
 
+
+
 class MapOL extends Component {
   constructor(props) {
     super(props);
@@ -62,14 +64,23 @@ class MapOL extends Component {
   }
 
   drawLine(line) {
-    const coordinates = line.geom.coordinates;
-    const lineString = new LineString(coordinates);
-    const feature = new Feature({
-      geometry: lineString,
+    const lineCoordinates = line.map(coord => fromLonLat([coord.lon, coord.lat]));
+  
+    const lineFeature = new Feature({
+      geometry: new LineString(lineCoordinates),
     });
-
-    const vectorSource = this.map.getLayers().getArray()[1].getSource();
-    vectorSource.addFeature(feature);
+  
+    // Создаем источник векторного слоя, если его еще нет
+    if (!this.vectorSource) {
+      this.vectorSource = new VectorSource();
+      const vectorLayer = new VectorLayer({
+        source: this.vectorSource,
+      });
+      this.map.addLayer(vectorLayer);
+    }
+  
+    // Добавляем объект Feature в источник векторного слоя
+    this.vectorSource.addFeature(lineFeature);
   }
 
   addMarker(lon, lat, number, name) {
@@ -133,6 +144,8 @@ class MapOL extends Component {
       this.popup.style.display = 'none';
     }
   }
+
+  
 
   render() {
     return <div ref={this.mapRef} style={{ height: '90vh', width: '100%' }} />;

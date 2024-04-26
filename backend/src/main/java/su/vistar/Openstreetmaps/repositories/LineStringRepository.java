@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface LineStringRepository extends JpaRepository<LineString, Long> {
-    public List<LineString> findByRouteId(Long id);
+    List<LineString> findByRouteId(Long id);
 }
