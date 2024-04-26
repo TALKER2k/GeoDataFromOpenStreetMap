@@ -12,7 +12,6 @@ import java.util.List;
 @RequestMapping("/route")
 public class RouteBusController {
     private final RouteBusService routeBusService;
-
     public RouteBusController(RouteBusService routeBusService) {
         this.routeBusService = routeBusService;
     }
