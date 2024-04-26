@@ -124,6 +124,54 @@ function App() {
             });
     }
 
+    function showRoutes() {
+        fetch('http://localhost:8089/route/getAllRoutes', {
+            method: 'GET',
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Преобразуем ответ в JSON
+            } else {
+                throw new Error('Failed to fetch routes.');
+            }
+        })
+        .then(data => {
+            // Обработка полученных данных о маршрутах
+            console.log('Routes:', data);
+    
+            // Для каждого маршрута получаем связанные с ним линии
+            data.forEach(route => {
+                fetch(`http://localhost:8089/route/getLinesByRouteId/${route.id}`, {
+                    method: 'GET',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Преобразуем ответ в JSON
+                    } else {
+                        throw new Error('Failed to fetch lines for route ' + route.id);
+                    }
+                })
+                .then(lines => {
+                    // Обработка полученных данных о линиях
+                    console.log('Lines for route', route.id + ':', lines);
+                    lines.forEach(line => {
+                        mapRef.current.drawLine(line);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching lines for route ' + route.id);
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while fetching routes.');
+        });
+    }
+    
+    
+
     function updateRoutes() {
         fetch('http://localhost:8089/route/updateBDRouteBus', {
             method: 'GET',
@@ -180,6 +228,8 @@ function App() {
                 <option value={2}>OSM</option>
             </select>
             <Button className="button" onClick={updateRoutes} variant="primary">Update route</Button>
+            <Button className="button" onClick={showRoutes} variant="primary">Show route</Button>
+
             <MapOL ref={mapRef} />
         </div>
     );

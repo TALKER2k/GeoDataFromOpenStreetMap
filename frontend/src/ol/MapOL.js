@@ -12,6 +12,7 @@ import { fromLonLat } from 'ol/proj';
 import { Icon, Style } from 'ol/style';
 import Overlay from 'ol/Overlay';
 import './MapStyle.css';
+import LineString from 'ol/geom/LineString';
 
 class MapOL extends Component {
   constructor(props) {
@@ -51,6 +52,24 @@ class MapOL extends Component {
 
   componentWillUnmount() {
     this.map.setTarget(null);
+  }
+
+  componentDidUpdate(prevProps) {
+    // Проверяем, изменились ли данные о маршрутах
+    if (prevProps.routes !== this.props.routes) {
+      this.drawRoutes();
+    }
+  }
+
+  drawLine(line) {
+    const coordinates = line.geom.coordinates;
+    const lineString = new LineString(coordinates);
+    const feature = new Feature({
+      geometry: lineString,
+    });
+
+    const vectorSource = this.map.getLayers().getArray()[1].getSource();
+    vectorSource.addFeature(feature);
   }
 
   addMarker(lon, lat, number, name) {
