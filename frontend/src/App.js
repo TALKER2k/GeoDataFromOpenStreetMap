@@ -18,7 +18,7 @@ function App() {
     useEffect(() => {
         async function fetchCountries() {
             try {
-                const response = await axios.get('http://localhost:8080/api/countries');
+                const response = await axios.get('http://localhost:8089/api/countries');
                 console.log('Countries:', response.data);
                 setCountries(response.data);
                 console.log('Страны:', response.data);
@@ -35,7 +35,7 @@ function App() {
     useEffect(() => {
         function fetchCities() {
             if (selectedCountry) {
-                axios.get(`http://localhost:8080/api/countries/${selectedCountry}/cities`)
+                axios.get(`http://localhost:8089/api/countries/${selectedCountry}/cities`)
                     .then(response => {
                         console.log('Cities:', response.data);
                         setCities(response.data);
@@ -98,8 +98,8 @@ function App() {
     }
 
     function searchCity() {
-        const dbRequest = 'http://localhost:8080/settings_gates/getAllGatesByDB?city=' + selectedCity;
-        const osmRequest = 'http://localhost:8080/settings_gates/getAllGatesByOSM?city=' + selectedCity;
+        const dbRequest = 'http://localhost:8089/settings_gates/getAllGatesByDB?city=' + selectedCity;
+        const osmRequest = 'http://localhost:8089/settings_gates/getAllGatesByOSM?city=' + selectedCity;
         if (selectedTypeSearch === '1') {
             createRequestSearchCity(dbRequest);
         } else {
@@ -108,7 +108,7 @@ function App() {
     }
 
     function updateGates() {
-        fetch('http://localhost:8080/settings_gates/update', {
+        fetch('http://localhost:8089/settings_gates/update', {
             method: 'GET',
         })
             .then(response => {
@@ -123,6 +123,76 @@ function App() {
                 alert('An error occurred while updating gates location.');
             });
     }
+
+    function showRoutes() {
+        fetch('http://localhost:8089/route/getAllRoutes', {
+            method: 'GET',
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Преобразуем ответ в JSON
+            } else {
+                throw new Error('Failed to fetch routes.');
+            }
+        })
+        .then(data => {
+            // Обработка полученных данных о маршрутах
+            console.log('Routes:', data);
+    
+            // Для каждого маршрута получаем связанные с ним линии
+            data.forEach(route => {
+                fetch(`http://localhost:8089/route/getLinesByRouteId/1759247`, {
+                    method: 'GET',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Преобразуем ответ в JSON
+                    } else {
+                        throw new Error('Failed to fetch lines for route ' + route.id);
+                    }
+                })
+                .then(lines => {
+                    // Обработка полученных данных о линиях
+                    console.log('Lines for route', route.id + ':', lines);
+                    lines.forEach(coordinatesArray => {
+                        const line = coordinatesArray.map(coord => ({
+                          lon: coord.x,
+                          lat: coord.y
+                        }));
+                        mapRef.current.drawLine(line);
+                })
+            })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching lines for route ' + route.id);
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while fetching routes.');
+        });
+    }
+    
+    
+
+    function updateRoutes() {
+        fetch('http://localhost:8089/route/updateBDRouteBus', {
+            method: 'GET',
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Gates location updated successfully!');
+                } else {
+                    alert('Failed to update gates location.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating gates location.');
+            });
+    }
+
     function showMyLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((position) => {
@@ -161,6 +231,9 @@ function App() {
                 <option value={1}>Data base</option>
                 <option value={2}>OSM</option>
             </select>
+            <Button className="button" onClick={updateRoutes} variant="primary">Update route</Button>
+            <Button className="button" onClick={showRoutes} variant="primary">Show route</Button>
+
             <MapOL ref={mapRef} />
         </div>
     );

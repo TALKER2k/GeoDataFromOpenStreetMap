@@ -12,6 +12,9 @@ import { fromLonLat } from 'ol/proj';
 import { Icon, Style } from 'ol/style';
 import Overlay from 'ol/Overlay';
 import './MapStyle.css';
+import LineString from 'ol/geom/LineString';
+
+
 
 class MapOL extends Component {
   constructor(props) {
@@ -51,6 +54,33 @@ class MapOL extends Component {
 
   componentWillUnmount() {
     this.map.setTarget(null);
+  }
+
+  componentDidUpdate(prevProps) {
+    // Проверяем, изменились ли данные о маршрутах
+    if (prevProps.routes !== this.props.routes) {
+      this.drawRoutes();
+    }
+  }
+
+  drawLine(line) {
+    const lineCoordinates = line.map(coord => fromLonLat([coord.lon, coord.lat]));
+  
+    const lineFeature = new Feature({
+      geometry: new LineString(lineCoordinates),
+    });
+  
+    // Создаем источник векторного слоя, если его еще нет
+    if (!this.vectorSource) {
+      this.vectorSource = new VectorSource();
+      const vectorLayer = new VectorLayer({
+        source: this.vectorSource,
+      });
+      this.map.addLayer(vectorLayer);
+    }
+  
+    // Добавляем объект Feature в источник векторного слоя
+    this.vectorSource.addFeature(lineFeature);
   }
 
   addMarker(lon, lat, number, name) {
@@ -114,6 +144,8 @@ class MapOL extends Component {
       this.popup.style.display = 'none';
     }
   }
+
+  
 
   render() {
     return <div ref={this.mapRef} style={{ height: '90vh', width: '100%' }} />;

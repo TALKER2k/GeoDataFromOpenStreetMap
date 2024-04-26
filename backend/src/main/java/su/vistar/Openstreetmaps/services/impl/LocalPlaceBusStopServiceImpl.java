@@ -221,7 +221,7 @@ public class LocalPlaceBusStopServiceImpl implements LocalPlaceBusStopService {
                             point
                                     .setId(UUID.randomUUID())
                                     .setStopId(stop.getId())
-                                    .setGeom(point_);
+                                    .setPoint(point_);
                             //pointRepository.save(point);
                         } catch (Exception e) {
                             e.printStackTrace();
