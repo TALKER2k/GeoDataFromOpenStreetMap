@@ -8,12 +8,15 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.locationtech.jts.geom.Geometry;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "line_string")
 @Accessors(chain = true)
 @Data
 public class LineString {
     @Id
+    private UUID idLine;
     private Long id;
     private Long routeId;
     @Column(columnDefinition = "geometry(LineString,4326)")

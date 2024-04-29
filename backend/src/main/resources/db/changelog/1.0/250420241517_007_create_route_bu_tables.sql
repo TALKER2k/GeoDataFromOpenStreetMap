@@ -31,9 +31,10 @@ CREATE TABLE route_stop
 
 CREATE TABLE line_string
 (
-    id       BIGINT PRIMARY KEY NOT NULL,
+    id_line  UUID PRIMARY KEY NOT NULL,
+    id       BIGINT NOT NULL,
     route_id BIGINT,
-    geom     GEOMETRY(LineString, 4326),
+    geom     GEOMETRY(LineString, 3857),
     FOREIGN KEY (route_id) REFERENCES route (id)
 );
 
@@ -41,7 +42,7 @@ CREATE TABLE point
 (
     id      UUID PRIMARY KEY NOT NULL,
     stop_id BIGINT,
-    point    GEOMETRY(point, 4326),
+    point    GEOMETRY(point, 3857),
     FOREIGN KEY (stop_id) REFERENCES stop (id)
 );
 

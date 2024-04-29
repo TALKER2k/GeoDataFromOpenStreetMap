@@ -2,7 +2,7 @@ version: "3.0"
 services:
   db1:
     container_name: postgres-routing-osm
-    image: postgis/postgis
+    image: postgis/postgis:16-master
     restart: always
     ports:
       - '5434:5432'

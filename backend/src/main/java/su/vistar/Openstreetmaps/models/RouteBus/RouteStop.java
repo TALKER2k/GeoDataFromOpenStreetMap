@@ -12,7 +12,6 @@ import java.util.UUID;
 @Data
 public class RouteStop {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID id;
     @ManyToOne
     @JoinColumn(name = "route_id")
