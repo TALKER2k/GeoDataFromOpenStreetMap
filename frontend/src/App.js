@@ -49,10 +49,11 @@ function App() {
     }, []);
 
     function showRoutes() {
+        mapRef.current.clearMarkers();
         if (selectedRoute) {
             fetch(`http://localhost:8089/route/getLinesByRouteId/${selectedRoute}`, {
-                    method: 'GET',
-                })
+                method: 'GET',
+            })
                 .then(response => {
                     if (response.ok) {
                         return response.json(); // Преобразуем ответ в JSON
@@ -63,21 +64,38 @@ function App() {
                 .then(lines => {
                     // Обработка полученных данных о линиях
                     console.log('Lines for route', + ':', lines);
-                    lines.forEach(coordinatesArray => {
-                        const line = coordinatesArray.map(coord => ({
-                          lon: coord.x,
-                          lat: coord.y
-                        }));
+                    lines.forEach(line => {
                         mapRef.current.drawLine(line);
-
                     })
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching lines for route ');
+                });
 
+            fetch(`http://localhost:8089/route/getPointsByRouteId/${selectedRoute}`, {
+                method: 'GET',
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Преобразуем ответ в JSON
+                    } else {
+                        throw new Error('Failed to fetch lines for route ');
+                    }
+                })
+                .then(routes => {
+                    // Обработка полученных данных о линиях
+                    console.log('Lines for route', + ':', routes);
+                    routes.forEach(route => {
+                        mapRef.current.drawRoute(route);
+                    })
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     alert('An error occurred while fetching lines for route ');
                 });
         }
+
 
     }
 
