@@ -17,6 +17,7 @@ public class Point {
     @Id
     private UUID id;
     private Long stopId;
+    private Long routeId;
     @Column(columnDefinition = "geometry(Point,4326)")
     private org.locationtech.jts.geom.Point point;
 }

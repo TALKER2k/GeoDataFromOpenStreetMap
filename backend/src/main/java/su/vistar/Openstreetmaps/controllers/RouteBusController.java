@@ -33,8 +33,15 @@ public class RouteBusController {
 
     @CrossOrigin(origins = "*")
     @GetMapping("getLinesByRouteId/{id}")
-    public List<Coordinate[]> getLinesByRouteId(@PathVariable("id") Long id) {
+    public List<String> getLinesByRouteId(@PathVariable("id") Long id) {
         System.out.println("getAllRoutes start... Id = " + id);
         return routeBusService.getWaysByRouteId(id);
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("getPointsByRouteId/{id}")
+    public List<String> getPointsByRouteId(@PathVariable("id") Long id) {
+        System.out.println("getAllRoutes start... Id = " + id);
+        return routeBusService.getPointsByRouteId(id);
     }
 }

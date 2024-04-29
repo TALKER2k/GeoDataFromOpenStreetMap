@@ -6,7 +6,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.models.RouteBus.Point;
 import su.vistar.Openstreetmaps.models.RouteBus.Route;
@@ -42,12 +44,12 @@ public class RouteBusService {
         return routeRepository.findAll();
     }
 
-    public List<Coordinate[]> getWaysByRouteId(Long id) {
-        List<su.vistar.Openstreetmaps.models.RouteBus.LineString> lineStrings =
-                lineStringRepository.findByRouteId(id);
-        return lineStrings.stream()
-                .map(line -> line.getGeom().getCoordinates())
-                .toList();
+    public List<String> getPointsByRouteId(Long id) {
+        return pointRepository.findByRouteId(id);
+    }
+
+    public List<String> getWaysByRouteId(Long id) {
+        return lineStringRepository.findByRouteId(id);
     }
 
     public void updateAllBusStop() {
@@ -80,7 +82,7 @@ public class RouteBusService {
     public Coordinate ResponseNode(Stop stop, Long Id) throws Exception {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         String query = "[out:json];\n" +
-                "node(" + Long.toString(Id) + ");\n" +
+                "node(" + Id + ");\n" +
                 "out;";
         String response = sendOverpassQuery(overpassUrl, query);
         JSONObject jsonResponse = new JSONObject(response);
@@ -98,8 +100,8 @@ public class RouteBusService {
     public List<Coordinate> ResponseWay(long Id) throws Exception {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         String query = "[out:json];\n" +
-                "way(" + Long.toString(Id) + ");\n" +
-                "(._;>;);\n" +
+                "way(id:" + Id + ");\n" +
+                "node(w);\n" +
                 "out;";
         String response = sendOverpassQuery(overpassUrl, query);
         JSONObject jsonResponse = new JSONObject(response);
@@ -174,18 +176,19 @@ public class RouteBusService {
 
                     try {
                         List<Coordinate> coordinates = ResponseWay(wayId);
-                        Coordinate[] coordinates1 = coordinates.stream().toArray(Coordinate[]::new);
+                        Coordinate[] coordinates1 = coordinates.toArray(Coordinate[]::new);
 
-                        org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 3857 );
+                        org.locationtech.jts.geom.GeometryFactory geometryFactory =
+                                new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 3857);
 
                         LineString lineString = geometryFactory.createLineString(coordinates1);
-                        lineString.setSRID(3857 );
+                        lineString.setSRID(3857);
 
                         lineStringEntity
+                                .setIdLine(UUID.randomUUID())
                                 .setId(wayId)
                                 .setRouteId(route.getId())
                                 .setGeom(lineString);
-                        System.out.println(lineStringEntity);
                         lineStringRepository.save(lineStringEntity);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -210,27 +213,19 @@ public class RouteBusService {
                             point.setId(UUID.randomUUID());
                             point.setStopId(stop.getId());
                             point.setPoint(point_);
+                            point.setRouteId(route.getId());
                             pointRepository.save(point);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
 
-                        System.out.println(stop);
-                        System.out.println(point);
+                        routeStop.setId(UUID.randomUUID());
+                        routeStop.setRoute(route);
+                        routeStop.setStop(stop);
+                        routeStop.setSequence(count++);
 
-                        routeStop
-                                .setId(UUID.randomUUID())
-                                .setRoute(route)
-                                .setStop(stop)
-                                .setSequence(count++);
-                        System.out.println(routeStop);
-
-
-//                        routeStopRepository.save(routeStop);
-
+                        routeStopRepository.save(routeStop);
                     }
-//                    System.out.println(route);
-
                 }
             }
         }
