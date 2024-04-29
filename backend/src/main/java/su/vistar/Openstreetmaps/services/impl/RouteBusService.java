@@ -176,10 +176,10 @@ public class RouteBusService {
                         List<Coordinate> coordinates = ResponseWay(wayId);
                         Coordinate[] coordinates1 = coordinates.stream().toArray(Coordinate[]::new);
 
-                        org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 4326);
+                        org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 3857 );
 
                         LineString lineString = geometryFactory.createLineString(coordinates1);
-                        lineString.setSRID(4326);
+                        lineString.setSRID(3857 );
 
                         lineStringEntity
                                 .setId(wayId)
@@ -202,9 +202,9 @@ public class RouteBusService {
                             stop.setLat(coordinate.getX());
                             stop.setLon(coordinate.getY());
 
-                            org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 4326);
+                            org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 3857);
                             org.locationtech.jts.geom.Point point_ = geometryFactory.createPoint(new Coordinate(coordinate.getX(), coordinate.getY()));
-                            point_.setSRID(4326);
+                            point_.setSRID(3857);
                             stopRepository.save(stop);
 
                             point.setId(UUID.randomUUID());

@@ -34,6 +34,7 @@ public class RouteBusController {
     @CrossOrigin(origins = "*")
     @GetMapping("getLinesByRouteId/{id}")
     public List<Coordinate[]> getLinesByRouteId(@PathVariable("id") Long id) {
+        System.out.println("getAllRoutes start... Id = " + id);
         return routeBusService.getWaysByRouteId(id);
     }
 }

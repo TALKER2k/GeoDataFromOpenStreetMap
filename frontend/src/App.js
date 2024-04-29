@@ -10,10 +10,14 @@ function App() {
     const mapRef = useRef(null);
     const [countries, setCountries] = useState([]);
     const [cities, setCities] = useState([]);
+    const [routes, setRoutes] = useState([]);
+    const [buses, setBuses] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState('');
     const [selectedCity, setSelectedCity] = useState('');
-    const [TypesSearch , setTypesSearch] = useState([]);
-    const [selectedTypeSearch , setSelectedTypeSearch] = useState('');
+    const [selectedRoute, setSelectedRoute] = useState('');
+    const [selectedBus, setSelectedBus] = useState('');
+    const [TypesSearch, setTypesSearch] = useState([]);
+    const [selectedTypeSearch, setSelectedTypeSearch] = useState('');
 
     useEffect(() => {
         async function fetchCountries() {
@@ -27,11 +31,56 @@ function App() {
                 console.error('Error fetching countries:', error);
             }
         }
-    
+
         fetchCountries();
     }, []);
-    
-    
+
+    useEffect(() => {
+        async function fetchRoutes() {
+            try {
+                const response = await axios.get('http://localhost:8089/route/getAllRoutes');
+                setRoutes(response.data);
+            } catch (error) {
+                console.error('Error fetching countries:', error);
+            }
+        }
+
+        fetchRoutes();
+    }, []);
+
+    function showRoutes() {
+        if (selectedRoute) {
+            fetch(`http://localhost:8089/route/getLinesByRouteId/${selectedRoute}`, {
+                    method: 'GET',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Преобразуем ответ в JSON
+                    } else {
+                        throw new Error('Failed to fetch lines for route ');
+                    }
+                })
+                .then(lines => {
+                    // Обработка полученных данных о линиях
+                    console.log('Lines for route', + ':', lines);
+                    lines.forEach(coordinatesArray => {
+                        const line = coordinatesArray.map(coord => ({
+                          lon: coord.x,
+                          lat: coord.y
+                        }));
+                        mapRef.current.drawLine(line);
+
+                    })
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching lines for route ');
+                });
+        }
+
+    }
+
     useEffect(() => {
         function fetchCities() {
             if (selectedCountry) {
@@ -45,17 +94,25 @@ function App() {
                     });
             }
         }
-    
+
         fetchCities();
     }, [selectedCountry]);
-    
+
 
     const handleCountryChange = (event) => {
         setSelectedCountry(event.target.value);
     };
 
+    const handleRouteChange = (event) => {
+        setSelectedRoute(event.target.value);
+    };
+
     const handleCityChange = (event) => {
         setSelectedCity(event.target.value);
+    };
+
+    const handleBusChange = (event) => {
+        setSelectedBus(event.target.value);
     };
 
     const handleTypeSearchChange = (event) => {
@@ -124,57 +181,7 @@ function App() {
             });
     }
 
-    function showRoutes() {
-        fetch('http://localhost:8089/route/getAllRoutes', {
-            method: 'GET',
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json(); // Преобразуем ответ в JSON
-            } else {
-                throw new Error('Failed to fetch routes.');
-            }
-        })
-        .then(data => {
-            // Обработка полученных данных о маршрутах
-            console.log('Routes:', data);
-    
-            // Для каждого маршрута получаем связанные с ним линии
-            data.forEach(route => {
-                fetch(`http://localhost:8089/route/getLinesByRouteId/1759247`, {
-                    method: 'GET',
-                })
-                .then(response => {
-                    if (response.ok) {
-                        return response.json(); // Преобразуем ответ в JSON
-                    } else {
-                        throw new Error('Failed to fetch lines for route ' + route.id);
-                    }
-                })
-                .then(lines => {
-                    // Обработка полученных данных о линиях
-                    console.log('Lines for route', route.id + ':', lines);
-                    lines.forEach(coordinatesArray => {
-                        const line = coordinatesArray.map(coord => ({
-                          lon: coord.x,
-                          lat: coord.y
-                        }));
-                        mapRef.current.drawLine(line);
-                })
-            })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while fetching lines for route ' + route.id);
-                });
-            });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while fetching routes.');
-        });
-    }
-    
-    
+
 
     function updateRoutes() {
         fetch('http://localhost:8089/route/updateBDRouteBus', {
@@ -232,6 +239,13 @@ function App() {
                 <option value={2}>OSM</option>
             </select>
             <Button className="button" onClick={updateRoutes} variant="primary">Update route</Button>
+            <select className="button" value={selectedRoute} onChange={handleRouteChange}>
+                {Array.isArray(routes) && routes.map(route => (
+                    <option key={route.id} value={route.id}>
+                        {route.ref + ' - ' + route.from}
+                    </option>
+                ))}
+            </select>
             <Button className="button" onClick={showRoutes} variant="primary">Show route</Button>
 
             <MapOL ref={mapRef} />
