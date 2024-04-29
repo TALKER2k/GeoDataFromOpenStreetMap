@@ -82,3 +82,13 @@ databaseChangeLog:
         - sqlFile:
             path: 250420241517_007_create_route_bu_tables.sql
             relativeToChangelogFile: true
+
+  - changeSet:
+      id: 300420240049_008_add_column_routeid_for_point
+      author: Nikita Pushkin
+      comment: add table route bus
+      runOnChange: true
+      changes:
+        - sqlFile:
+            path: 300420240049_008_add_column_routeid_for_point.sql
+            relativeToChangelogFile: true

@@ -1,0 +1,2 @@
+ALTER TABLE point
+    ADD COLUMN route_id BIGINT;
