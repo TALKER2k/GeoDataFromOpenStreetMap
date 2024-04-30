@@ -128,7 +128,7 @@ class MapOL extends Component {
     const lineStyle = new Style({
       stroke: new Stroke({
           color: 'blue',
-          width: 2,
+          width: 15,
       }),
   });
   

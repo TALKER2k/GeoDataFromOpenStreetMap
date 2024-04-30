@@ -18,11 +18,10 @@ import su.vistar.Openstreetmaps.repositories.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class RouteBusService {
@@ -114,7 +113,38 @@ public class RouteBusService {
                     coordinates.add(new Coordinate(element.getDouble("lon"), element.getDouble("lat")));
             }
         }
+
+        coordinates.sort((c1, c2) -> {
+            double distance1 = calculateDistance(c1, coordinates);
+            double distance2 = calculateDistance(c2, coordinates);
+            return Double.compare(distance2, distance1);
+        });
+
+        Coordinate fixedPoint = coordinates.get(0);
+
+        coordinates.subList(1, coordinates.size()).sort((c1, c2) -> {
+            double distance1 = calculateDistance(fixedPoint, c1);
+            double distance2 = calculateDistance(fixedPoint, c2);
+            return Double.compare(distance1, distance2);
+        });
+
         return coordinates;
+    }
+
+    private double calculateDistance(Coordinate c, List<Coordinate> coordinates) {
+        double sum = 0;
+        for (Coordinate other : coordinates) {
+            double xDiff = c.getX() - other.getX();
+            double yDiff = c.getY() - other.getY();
+            sum += Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+        }
+        return sum;
+    }
+
+    private double calculateDistance(Coordinate c1, Coordinate c2) {
+        double xDiff = c1.getX() - c2.getX();
+        double yDiff = c1.getY() - c2.getY();
+        return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
     }
 
     private void processOverpassResponse(String response) {
