@@ -56,13 +56,12 @@ function App() {
             })
                 .then(response => {
                     if (response.ok) {
-                        return response.json(); // Преобразуем ответ в JSON
+                        return response.json(); 
                     } else {
                         throw new Error('Failed to fetch lines for route ');
                     }
                 })
                 .then(lines => {
-                    // Обработка полученных данных о линиях
                     console.log('Lines for route', + ':', lines);
                     lines.forEach(line => {
                         mapRef.current.drawLine(line);
@@ -78,13 +77,12 @@ function App() {
             })
                 .then(response => {
                     if (response.ok) {
-                        return response.json(); // Преобразуем ответ в JSON
+                        return response.json(); 
                     } else {
                         throw new Error('Failed to fetch lines for route ');
                     }
                 })
                 .then(routes => {
-                    // Обработка полученных данных о линиях
                     console.log('Lines for route', + ':', routes);
                     routes.forEach(route => {
                         mapRef.current.drawRoute(route);
@@ -138,7 +136,6 @@ function App() {
     }
 
     const handleSubmit = () => {
-        // Отправка выбранных идентификаторов страны и города на сервер
         console.log('Selected country id:', selectedCountry);
         console.log('Selected city id:', selectedCity);
     };
