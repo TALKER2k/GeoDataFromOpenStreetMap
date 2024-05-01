@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "lift_gate_osm")
 @Accessors(chain = true)
 @Data
 public class Employee {
@@ -33,7 +33,7 @@ public class Employee {
     @Column(name = "roles")
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
-            name = "user_roles",
+            name = "user_roles", schema = "lift_gate_osm",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
     )

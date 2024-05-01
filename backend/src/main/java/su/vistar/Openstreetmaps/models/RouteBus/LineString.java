@@ -11,7 +11,7 @@ import org.locationtech.jts.geom.Geometry;
 import java.util.UUID;
 
 @Entity
-@Table(name = "line_string")
+@Table(name = "line_string", schema = "route_osm")
 @Accessors(chain = true)
 @Data
 public class LineString {

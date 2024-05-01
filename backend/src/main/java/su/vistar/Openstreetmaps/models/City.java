@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "city")
+@Table(name = "city", schema = "lift_gate_osm")
 @Accessors(chain = true)
 @Getter
 @Setter

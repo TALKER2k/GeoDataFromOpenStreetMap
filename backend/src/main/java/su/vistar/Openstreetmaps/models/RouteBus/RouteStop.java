@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.util.UUID;
 
 @Entity
-@Table(name = "route_stop")
+@Table(name = "route_stop", schema = "route_osm")
 @Accessors(chain = true)
 @Data
 public class RouteStop {
