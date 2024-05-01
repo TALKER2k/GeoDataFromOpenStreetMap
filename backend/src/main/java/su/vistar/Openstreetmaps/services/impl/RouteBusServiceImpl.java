@@ -9,48 +9,60 @@ import org.json.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import su.vistar.Openstreetmaps.DTO.RouteDTO;
 import su.vistar.Openstreetmaps.models.RouteBus.Point;
 import su.vistar.Openstreetmaps.models.RouteBus.Route;
 import su.vistar.Openstreetmaps.models.RouteBus.RouteStop;
 import su.vistar.Openstreetmaps.models.RouteBus.Stop;
 import su.vistar.Openstreetmaps.repositories.*;
+import su.vistar.Openstreetmaps.services.RouteBusService;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class RouteBusService {
+public class RouteBusServiceImpl implements RouteBusService {
     private final PointRepository pointRepository;
     private final RouteRepository routeRepository;
     private final RouteStopRepository routeStopRepository;
     private final StopRepository stopRepository;
     private final LineStringRepository lineStringRepository;
+    private final ModelMapper modelMapper;
 
-    public RouteBusService(PointRepository pointRepository, RouteRepository routeRepository, RouteStopRepository routeStopRepository, StopRepository stopRepository, LineStringRepository lineStringRepository) {
+    public RouteBusServiceImpl(PointRepository pointRepository, RouteRepository routeRepository, RouteStopRepository routeStopRepository, StopRepository stopRepository, LineStringRepository lineStringRepository, ModelMapper modelMapper) {
         this.pointRepository = pointRepository;
         this.routeRepository = routeRepository;
         this.routeStopRepository = routeStopRepository;
         this.stopRepository = stopRepository;
         this.lineStringRepository = lineStringRepository;
+        this.modelMapper = modelMapper;
     }
 
-    public List<Route> getAllRoutes() {
-        return routeRepository.findAll();
+    @Override
+    public List<RouteDTO> getAllRoutes() {
+        List<Route> routes = routeRepository.findAll();
+        return routes.stream()
+                .map(route -> modelMapper.map(route, RouteDTO.class))
+                .collect(Collectors.toList());
     }
 
+    @Override
     public List<String> getPointsByRouteId(Long id) {
         return pointRepository.findByRouteId(id);
     }
 
+    @Override
     public List<String> getWaysByRouteId(Long id) {
         return lineStringRepository.findByRouteId(id);
     }
 
+    @Override
     public void updateAllBusStop() {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         //примерно центр Воронежа
@@ -78,7 +90,7 @@ public class RouteBusService {
         }
     }
 
-    public Coordinate ResponseNode(Stop stop, Long Id) throws Exception {
+    private Coordinate ResponseNode(Long Id) throws Exception {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         String query = "[out:json];\n" +
                 "node(" + Id + ");\n" +
@@ -87,16 +99,10 @@ public class RouteBusService {
         JSONObject jsonResponse = new JSONObject(response);
         JSONArray elements = jsonResponse.getJSONArray("elements");
         JSONObject element = elements.getJSONObject(0);
-        Coordinate coordinate = new Coordinate(element.getDouble("lon"), element.getDouble("lat"));
-        return coordinate;
-        //stop.setLon(element.getDouble("lon"));
-        //stop.setLat(element.getDouble("lat"));
-        /*JSONArray tags = element.getJSONArray("tags");
-        JSONObject tag = tags.getJSONObject(0);
-        stop.setName(tag.getString("name"));*/
+        return new Coordinate(element.getDouble("lon"), element.getDouble("lat"));
     }
 
-    public List<Coordinate> ResponseWay(long Id) throws Exception {
+    private List<Coordinate> ResponseWay(long Id) throws Exception {
         String overpassUrl = "https://overpass-api.de/api/interpreter";
         String query = "[out:json];\n" +
                 "way(id:" + Id + ");\n" +
@@ -148,9 +154,6 @@ public class RouteBusService {
     }
 
     private void processOverpassResponse(String response) {
-        String overpassUrl = "https://overpass-api.de/api/interpreter";
-        JSONObject jsonResponse = new JSONObject(response);
-
         Gson gson = new Gson();
         JsonObject osmObject = gson.fromJson(response, JsonObject.class);
         JsonArray elements = osmObject.getAsJsonArray("elements");
@@ -201,8 +204,7 @@ public class RouteBusService {
                 routeRepository.save(route);
 
                 if ("way".equals(type)) {
-                    Long wayId = member.getAsJsonObject().get("ref").getAsLong();
-                    // Создание LineString из массива координат
+                    long wayId = member.getAsJsonObject().get("ref").getAsLong();
 
                     try {
                         List<Coordinate> coordinates = ResponseWay(wayId);
@@ -231,7 +233,7 @@ public class RouteBusService {
                                 .setId(member.getAsJsonObject().get("ref").getAsLong())
                                 .setName(member.getAsJsonObject().get("role").getAsString());
                         try {
-                            Coordinate coordinate = ResponseNode(stop, stop.getId());
+                            Coordinate coordinate = ResponseNode(stop.getId());
                             stop.setLat(coordinate.getX());
                             stop.setLon(coordinate.getY());
 
