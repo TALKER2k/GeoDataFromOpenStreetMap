@@ -34,7 +34,4 @@ public class LocalPlaceGateController {
         System.out.println("Method getAllGatesByOSM start");
         return localPlaceGateService.getAllGatesByCityByOSM(cityId);
     }
-
-
-
 }

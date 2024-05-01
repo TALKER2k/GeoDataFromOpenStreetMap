@@ -18,6 +18,8 @@ function App() {
     const [selectedBus, setSelectedBus] = useState('');
     const [TypesSearch, setTypesSearch] = useState([]);
     const [selectedTypeSearch, setSelectedTypeSearch] = useState('');
+    const [position, setPosition] = useState(null);
+    const [intervalId, setIntervalId] = useState(null);
 
     useEffect(() => {
         async function fetchCountries() {
@@ -228,6 +230,45 @@ function App() {
             console.error('Geolocation is not supported by this browser.');
         }
     }
+
+    function startTracking() {
+        const id = setInterval(() => {
+            fetchPosition();
+        }, 5000);
+        setIntervalId(id);
+    }
+
+    function stopTracking() {
+        clearInterval(intervalId);
+        setIntervalId(null);
+    }
+
+    function fetchPosition() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                setPosition(pos.coords);
+            }, (error) => {
+                console.error('Error getting current location:', error);
+            });
+        } else {
+            console.error('Geolocation is not supported by this browser.');
+        }
+    }
+
+    function handleCheckGatesAround() {
+        fetch('http://localhost:8089/gps/checkGatesAround')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                console.log('Request to /checkGatesAround successful');
+            })
+            .catch(error => {
+                console.error('There was a problem with the request:', error);
+            });
+    }
+
+
     return (
         <div className="App">
             <select className="button" value={selectedCountry} onChange={handleCountryChange}>
@@ -245,15 +286,18 @@ function App() {
                     </option>
                 ))}
             </select>
-            <Button className="button" onClick={searchCity} variant="primary">Submit</Button>
-            <Button className="button" onClick={updateGates} variant="primary">Update data</Button>
-            <Button className="button" onClick={showMyLocation} variant="primary">Your location</Button>
+            <Button className="button" onClick={handleCheckGatesAround} variant="primary">Open Gate Around</Button>
+            <Button className="button" onClick={startTracking} variant="primary">Start Tracking</Button>
+            <Button className="button" onClick={stopTracking} variant="danger">Stop Tracking</Button>
+            <Button className="button" onClick={searchCity} variant="primary">Show lift gates</Button>
+            <Button className="button" onClick={updateGates} variant="primary">Update data for lift gates</Button>
+            <Button className="button" onClick={showMyLocation} variant="primary">My location</Button>
             <select className="button" value={selectedTypeSearch} onChange={handleTypeSearchChange}>
                 <option value="">Select Type search</option>
                 <option value={1}>Data base</option>
                 <option value={2}>OSM</option>
             </select>
-            <Button className="button" onClick={updateRoutes} variant="primary">Update route</Button>
+            <Button className="button" onClick={updateRoutes} variant="primary">Update data routes</Button>
             <select className="button" value={selectedRoute} onChange={handleRouteChange}>
                 {Array.isArray(routes) && routes.map(route => (
                     <option key={route.id} value={route.id}>
