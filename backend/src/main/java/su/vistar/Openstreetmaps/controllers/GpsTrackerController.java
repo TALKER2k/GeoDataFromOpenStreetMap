@@ -19,6 +19,7 @@ public class GpsTrackerController {
         this.localPlaceGateService = localPlaceGateService;
     }
 
+    @CrossOrigin(origins = "*")
     @PostMapping("/checkGatesAround")
     public ResponseEntity<List<LocalPlaceGate>> getUserGeoLocation(@RequestBody GeoLocation geoLocation) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
