@@ -1,10 +1,9 @@
-package su.vistar.Openstreetmaps.repositories;
+package su.vistar.Openstreetmaps.repositories.GateRepositories;
 
-import liquibase.change.DatabaseChange;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import su.vistar.Openstreetmaps.models.City;
-import su.vistar.Openstreetmaps.models.Country;
+import su.vistar.Openstreetmaps.models.Gates.City;
+import su.vistar.Openstreetmaps.models.Gates.Country;
 
 import java.util.List;
 

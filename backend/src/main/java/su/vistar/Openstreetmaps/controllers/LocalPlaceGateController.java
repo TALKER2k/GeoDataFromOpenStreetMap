@@ -4,7 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import su.vistar.Openstreetmaps.DTO.GatesDTO;
-import su.vistar.Openstreetmaps.services.LocalPlaceGateService;
+import su.vistar.Openstreetmaps.services.GateServises.LocalPlaceGateService;
+import su.vistar.Openstreetmaps.services.GateServises.UpdateGateService;
 
 import java.util.List;
 
@@ -14,12 +15,13 @@ import java.util.List;
 @Slf4j
 public class LocalPlaceGateController {
     private final LocalPlaceGateService localPlaceGateService;
+    private final UpdateGateService updateGateService;
 
     @CrossOrigin(origins = "*")
     @GetMapping("/update")
     public void updateAllGates() throws InterruptedException {
         log.info("Method update start");
-        localPlaceGateService.updateAllGates();
+        updateGateService.updateAllGates();
         log.info("Method update end");
     }
 

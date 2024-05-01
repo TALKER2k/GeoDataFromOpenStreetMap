@@ -1,10 +1,10 @@
-package su.vistar.Openstreetmaps.repositories;
+package su.vistar.Openstreetmaps.repositories.RouteRepositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import su.vistar.Openstreetmaps.models.RouteBus.Point;
+import su.vistar.Openstreetmaps.models.Routes.Point;
 
 import java.util.List;
 

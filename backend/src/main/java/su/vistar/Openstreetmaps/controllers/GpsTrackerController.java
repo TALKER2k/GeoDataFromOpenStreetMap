@@ -5,8 +5,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import su.vistar.Openstreetmaps.DTO.GeoLocation;
-import su.vistar.Openstreetmaps.models.LocalPlaceGate;
-import su.vistar.Openstreetmaps.services.LocalPlaceGateService;
+import su.vistar.Openstreetmaps.models.Gates.LocalPlaceGate;
+import su.vistar.Openstreetmaps.services.GateServises.LocalPlaceGateService;
 
 import java.util.List;
 

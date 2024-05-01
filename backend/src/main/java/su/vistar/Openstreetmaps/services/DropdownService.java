@@ -1,7 +1,7 @@
 package su.vistar.Openstreetmaps.services;
 
-import su.vistar.Openstreetmaps.models.City;
-import su.vistar.Openstreetmaps.models.Country;
+import su.vistar.Openstreetmaps.models.Gates.City;
+import su.vistar.Openstreetmaps.models.Gates.Country;
 
 import java.util.List;
 

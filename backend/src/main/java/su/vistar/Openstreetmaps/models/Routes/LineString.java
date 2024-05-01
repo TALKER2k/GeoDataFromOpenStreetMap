@@ -1,4 +1,4 @@
-package su.vistar.Openstreetmaps.models.RouteBus;
+package su.vistar.Openstreetmaps.models.Routes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

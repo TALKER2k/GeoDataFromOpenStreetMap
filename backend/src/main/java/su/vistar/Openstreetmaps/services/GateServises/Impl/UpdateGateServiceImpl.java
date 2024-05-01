@@ -1,4 +1,4 @@
-package su.vistar.Openstreetmaps.services.impl;
+package su.vistar.Openstreetmaps.services.GateServises.Impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -8,18 +8,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import su.vistar.Openstreetmaps.DTO.GatesDTO;
-import su.vistar.Openstreetmaps.DTO.GeoLocation;
-import su.vistar.Openstreetmaps.models.City;
-import su.vistar.Openstreetmaps.models.Country;
-import su.vistar.Openstreetmaps.models.Employee;
-import su.vistar.Openstreetmaps.models.LocalPlaceGate;
-import su.vistar.Openstreetmaps.repositories.CityRepository;
-import su.vistar.Openstreetmaps.repositories.CountryRepository;
-import su.vistar.Openstreetmaps.repositories.LocalPlaceGateRepository;
-import su.vistar.Openstreetmaps.repositories.UserRepository;
-import su.vistar.Openstreetmaps.services.LocalPlaceGateService;
-import su.vistar.Openstreetmaps.services.TelephoneService;
+import su.vistar.Openstreetmaps.models.Gates.City;
+import su.vistar.Openstreetmaps.models.Gates.Country;
+import su.vistar.Openstreetmaps.models.Gates.LocalPlaceGate;
+import su.vistar.Openstreetmaps.repositories.GateRepositories.CityRepository;
+import su.vistar.Openstreetmaps.repositories.GateRepositories.CountryRepository;
+import su.vistar.Openstreetmaps.repositories.GateRepositories.LocalPlaceGateRepository;
+import su.vistar.Openstreetmaps.services.GateServises.UpdateGateService;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -33,52 +28,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
-public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
+public class UpdateGateServiceImpl implements UpdateGateService {
     private final LocalPlaceGateRepository localPlaceGateRepository;
-    private final TelephoneService telephoneService;
-    private final UserRepository userRepository;
     private final CountryRepository countryRepository;
     private final CityRepository cityRepository;
-//    private final ModelMapper modelMapper;
-
-    private final ExecutorService executor = Executors.newFixedThreadPool(3);
-    private final ExecutorService executor2 = Executors.newFixedThreadPool(10);
-    private final ExecutorService executor3 = Executors.newFixedThreadPool(10);
-
-    @Scheduled(cron = "* 0/30 22 * * *")
-    public void updateAllGatesAutomaticaly() {
-        String overpassUrl = "https://overpass-api.de/api/interpreter";
-        //примерно центр Воронежа
-        double latitudeCurrentNode = 51.661535;
-        double longitudeCurrentNode = 39.200287;
-        //14 км радиуса, чтоб охватить весь Воронеж
-        int radiusMeters = 15000;
-        List<String> barriersType = new ArrayList<>();
-        barriersType.add("lift_gate");
-        barriersType.add("gate");
-        for (String barrier : barriersType) {
-            String query = "[out:json];" +
-                    "(node[barrier=" + barrier + "](around:" + radiusMeters + "," +
-                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
-                    "way[barrier=" + barrier + "](around:" + radiusMeters + "," +
-                    latitudeCurrentNode + "," + longitudeCurrentNode + ");" +
-                    "relation[barrier=" + barrier + "](around:" + radiusMeters + "," +
-                    latitudeCurrentNode + "," + longitudeCurrentNode + "););" +
-                    "out;";
-            try {
-                String response = sendOverpassQuery(overpassUrl, query);
-                processOverpassResponseForCountry(response);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
+    private final ExecutorService executorForCity = Executors.newFixedThreadPool(10);
+    private final ExecutorService executorForGate = Executors.newFixedThreadPool(10);
+    static String overpassUrl = "https://overpass-api.de/api/interpreter";
     @Scheduled(cron = "* 0/34 22 * * *")
     @Override
     public void updateAllGates() throws InterruptedException {
-        String overpassUrl = "https://overpass-api.de/api/interpreter";
-
         Thread countryUpdateDB = new Thread(() -> {
             String query = "[out:json];" +
                     "area[\"ISO3166-1\"~\".*\"][admin_level=2];\n" +
@@ -133,7 +92,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
 
                 try {
                     String finalQuery = query;
-                    executor2.submit(() -> {
+                    executorForCity.submit(() -> {
                         try {
                             Random random = new Random();
                             Thread.sleep(500 + random.nextInt(1001));
@@ -179,7 +138,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
 
                 try {
                     String finalQuery = query;
-                    executor3.submit(() ->
+                    executorForGate.submit(() ->
                     {
                         try {
                             Random random = new Random();
@@ -282,79 +241,6 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         countryRepository.save(country);
     }
 
-
-    @Override
-    public List<LocalPlaceGate> checkGatesAround(String username, GeoLocation geoLocation) {
-        executor.submit(() -> {
-
-            Employee employee = userRepository.findByUsername(username);
-            employee.setLatitude(geoLocation.latitude())
-                    .setLongitude(geoLocation.longitude());
-
-            userRepository.save(employee);
-
-            List<LocalPlaceGate> placeGateList = localPlaceGateRepository.findNearbyAmbulanceVehicles(
-                    employee.getLatitude(),
-                    employee.getLongitude(),
-                    0.05
-            );
-
-            if (!placeGateList.isEmpty()) {
-                for (LocalPlaceGate gate : placeGateList) {
-                    telephoneService.callByNumber(gate.getPhoneNumber());
-                }
-            }
-
-            return placeGateList;
-
-        });
-        return null;
-    }
-
-    @Override
-    public List<GatesDTO> getAllGatesByCity(Long cityId){
-        City city = cityRepository.findById(cityId).orElseThrow(() -> new RuntimeException("not fount city"));
-        List<GatesDTO> gatesDTOList = new ArrayList<>();
-
-        List<LocalPlaceGate> gatesList = localPlaceGateRepository.findGateByIdCity(city.getCityId());
-
-        for (LocalPlaceGate gates : gatesList) {
-            gatesDTOList.add(new GatesDTO(gates.getLongitude(),gates.getLatitude(),gates.getName(),gates.getPhoneNumber()));
-        }
-
-        System.out.println(gatesDTOList);
-        return gatesDTOList;
-    }
-
-    @Override
-    public  List<GatesDTO> getAllGatesByCityByOSM(Long cityId){
-        City city = cityRepository.findById(cityId).orElseThrow(() -> new RuntimeException("not fount city"));
-        String cityName = city.getName();
-        String overpassUrl = "https://overpass-api.de/api/interpreter";
-
-        String query = "[out:json];" +
-                "area[\"name\"=\"" + cityName + "\"];\n" +
-                "(node[barrier=lift_gate](area););\n" +
-                "out;";
-        List<GatesDTO> resultGates = new ArrayList<>();
-        try {
-            String response = sendOverpassQuery(overpassUrl, query);
-            JSONObject jsonResponse = new JSONObject(response);
-            JSONArray elements = jsonResponse.getJSONArray("elements");
-            for (int i = 0;i < elements.length();i++){
-                JSONObject element = elements.getJSONObject(i);
-                double lat = element.getDouble("lat");
-                double lon = element.getDouble("lon");
-                String name = "lift_gates";
-                String phoneNumber = "+7987654321";
-                resultGates.add(new GatesDTO(lat,lon,name,phoneNumber));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return resultGates;
-    }
-
     @SneakyThrows(JSONException.class)
     private void processOverpassResponseForCountry(String response) {
         JSONObject jsonResponse = new JSONObject(response);
@@ -396,7 +282,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     }
 
 
-    private String sendOverpassQuery(String overpassUrl, String query) throws Exception {
+    public static String sendOverpassQuery(String overpassUrl, String query) throws Exception {
         URL url = new URL(overpassUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -420,4 +306,3 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
         return response.toString();
     }
 }
-

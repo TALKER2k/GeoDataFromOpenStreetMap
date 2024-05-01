@@ -1,8 +1,8 @@
 package su.vistar.Openstreetmaps.controllers;
 
 import org.springframework.web.bind.annotation.*;
-import su.vistar.Openstreetmaps.models.City;
-import su.vistar.Openstreetmaps.models.Country;
+import su.vistar.Openstreetmaps.models.Gates.City;
+import su.vistar.Openstreetmaps.models.Gates.Country;
 import su.vistar.Openstreetmaps.services.DropdownService;
 
 import java.util.List;

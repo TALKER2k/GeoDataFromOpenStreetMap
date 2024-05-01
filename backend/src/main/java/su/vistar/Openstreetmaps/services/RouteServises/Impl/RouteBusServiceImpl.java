@@ -1,4 +1,4 @@
-package su.vistar.Openstreetmaps.services.impl;
+package su.vistar.Openstreetmaps.services.RouteServises.Impl;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -12,19 +12,17 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.DTO.RouteDTO;
-import su.vistar.Openstreetmaps.models.RouteBus.Point;
-import su.vistar.Openstreetmaps.models.RouteBus.Route;
-import su.vistar.Openstreetmaps.models.RouteBus.RouteStop;
-import su.vistar.Openstreetmaps.models.RouteBus.Stop;
-import su.vistar.Openstreetmaps.repositories.*;
-import su.vistar.Openstreetmaps.services.RouteBusService;
+import su.vistar.Openstreetmaps.models.Routes.Point;
+import su.vistar.Openstreetmaps.models.Routes.Route;
+import su.vistar.Openstreetmaps.models.Routes.RouteStop;
+import su.vistar.Openstreetmaps.models.Routes.Stop;
+import su.vistar.Openstreetmaps.repositories.RouteRepositories.*;
+import su.vistar.Openstreetmaps.services.RouteServises.RouteBusService;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static su.vistar.Openstreetmaps.services.GateServises.Impl.UpdateGateServiceImpl.sendOverpassQuery;
 
 @Service
 public class RouteBusServiceImpl implements RouteBusService {
@@ -167,8 +165,8 @@ public class RouteBusServiceImpl implements RouteBusService {
 
                 String type = member.getAsJsonObject().get("type").getAsString();
                 Route route = new Route();
-                su.vistar.Openstreetmaps.models.RouteBus.LineString lineStringEntity =
-                        new su.vistar.Openstreetmaps.models.RouteBus.LineString();
+                su.vistar.Openstreetmaps.models.Routes.LineString lineStringEntity =
+                        new su.vistar.Openstreetmaps.models.Routes.LineString();
                 RouteStop routeStop = new RouteStop();
                 Stop stop = new Stop();
                 Point point = new Point();
@@ -263,28 +261,4 @@ public class RouteBusServiceImpl implements RouteBusService {
         }
     }
 
-
-    private String sendOverpassQuery(String overpassUrl, String query) throws Exception {
-        URL url = new URL(overpassUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        connection.setDoOutput(true);
-
-        connection.getOutputStream().write(("data=" + query).getBytes("UTF-8"));
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
-        reader.close();
-
-        connection.disconnect();
-
-        return response.toString();
-    }
 }

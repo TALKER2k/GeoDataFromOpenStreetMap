@@ -1,7 +1,6 @@
-package su.vistar.Openstreetmaps.models;
+package su.vistar.Openstreetmaps.models.Gates;
 
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

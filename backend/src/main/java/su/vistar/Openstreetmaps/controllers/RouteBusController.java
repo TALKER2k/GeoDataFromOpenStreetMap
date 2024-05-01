@@ -3,7 +3,7 @@ package su.vistar.Openstreetmaps.controllers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import su.vistar.Openstreetmaps.DTO.RouteDTO;
-import su.vistar.Openstreetmaps.services.RouteBusService;
+import su.vistar.Openstreetmaps.services.RouteServises.RouteBusService;
 
 import java.util.List;
 

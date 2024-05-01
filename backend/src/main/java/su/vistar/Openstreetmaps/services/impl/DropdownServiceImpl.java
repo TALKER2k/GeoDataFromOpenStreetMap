@@ -1,10 +1,10 @@
 package su.vistar.Openstreetmaps.services.impl;
 
 import org.springframework.stereotype.Service;
-import su.vistar.Openstreetmaps.models.City;
-import su.vistar.Openstreetmaps.models.Country;
-import su.vistar.Openstreetmaps.repositories.CityRepository;
-import su.vistar.Openstreetmaps.repositories.CountryRepository;
+import su.vistar.Openstreetmaps.models.Gates.City;
+import su.vistar.Openstreetmaps.models.Gates.Country;
+import su.vistar.Openstreetmaps.repositories.GateRepositories.CityRepository;
+import su.vistar.Openstreetmaps.repositories.GateRepositories.CountryRepository;
 import su.vistar.Openstreetmaps.services.DropdownService;
 
 import java.util.List;
