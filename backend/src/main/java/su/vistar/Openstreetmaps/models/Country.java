@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "country")
+@Table(name = "country", schema = "lift_gate_osm")
 @Accessors(chain = true)
 @Getter
 @Setter

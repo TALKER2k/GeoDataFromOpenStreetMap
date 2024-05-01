@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import java.util.Set;
 
 @Entity
-@Table(name = "stop")
+@Table(name = "stop", schema = "route_osm")
 @Accessors(chain = true)
 @Data
 public class Stop {

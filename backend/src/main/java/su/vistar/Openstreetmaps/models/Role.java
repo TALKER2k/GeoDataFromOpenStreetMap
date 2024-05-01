@@ -8,7 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Set;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "roles", schema = "lift_gate_osm")
 @Data
 public class Role {
     @Id
@@ -17,7 +17,7 @@ public class Role {
     private String name;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
-            name = "user_roles",
+            name = "user_roles", schema = "lift_gate_osm",
             joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id")
     )

@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table(name = "local_places_lift_gates")
+@Table(name = "local_places_lift_gates", schema = "lift_gate_osm")
 @Getter
 @Setter
 public class LocalPlaceGate {

@@ -10,7 +10,7 @@ import lombok.experimental.Accessors;
 import java.util.UUID;
 
 @Entity
-@Table(name = "point")
+@Table(name = "point", schema = "route_osm")
 @Accessors(chain = true)
 @Data
 public class Point {
