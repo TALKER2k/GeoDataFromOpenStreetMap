@@ -10,7 +10,6 @@ import su.vistar.Openstreetmaps.models.Gates.City;
 import su.vistar.Openstreetmaps.models.Employee;
 import su.vistar.Openstreetmaps.models.Gates.LocalPlaceGate;
 import su.vistar.Openstreetmaps.repositories.GateRepositories.CityRepository;
-import su.vistar.Openstreetmaps.repositories.GateRepositories.CountryRepository;
 import su.vistar.Openstreetmaps.repositories.GateRepositories.LocalPlaceGateRepository;
 import su.vistar.Openstreetmaps.repositories.UserRepository;
 import su.vistar.Openstreetmaps.services.GateServises.LocalPlaceGateService;
@@ -30,9 +29,7 @@ public class LocalPlaceGateServiceImpl implements LocalPlaceGateService {
     private final LocalPlaceGateRepository localPlaceGateRepository;
     private final TelephoneService telephoneService;
     private final UserRepository userRepository;
-    private final CountryRepository countryRepository;
     private final CityRepository cityRepository;
-//    private final ModelMapper modelMapper;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
