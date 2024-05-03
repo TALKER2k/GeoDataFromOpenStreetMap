@@ -172,10 +172,7 @@ function GatePage(){
                 console.error('There was a problem with the request:', error);
             });
     }
-
-    //<Button className="button" onClick={startTracking} variant="primary">Start Tracking</Button>
-    //<Button className="button" onClick={stopTracking} variant="danger">Stop Tracking</Button>
-    //
+    
     return (
         <div className="App">
             <select className="button" value={selectedCountry} onChange={handleCountryChange}>
@@ -202,6 +199,8 @@ function GatePage(){
                 <option value={1}>Data base</option>
                 <option value={2}>OSM</option>
             </select>
+            <Button className="button" onClick={startTracking} variant="primary">Start Tracking</Button>
+            <Button className="button" onClick={stopTracking} variant="danger">Stop Tracking</Button>
             <MapOL ref={mapRef} />
         </div>
     );

@@ -10,7 +10,7 @@ import GatePage from './page/GatePage'
 import RegistrationPage from './page/RegistrationPage'
 import RoutePage from './page/RoutePage'
 import SignUpPage from './page/SignUpPage'
-
+import HomePage from "./page/HomePage";
 
 export default class Header extends Component{
     render() {
@@ -18,7 +18,7 @@ export default class Header extends Component{
             <div>
                 <Navbar expand="lg" className="bg-body-tertiary">
                     <Container>
-                        <Navbar.Brand href="#home">OSMVIEW</Navbar.Brand>
+                        <Navbar.Brand href="/HomePage">OSMVIEW</Navbar.Brand>
                         <Navbar.Toggle aria-controls="basic-navbar-nav" />
                         <Navbar.Collapse id="basic-navbar-nav">
                             <Nav className="me-auto">
@@ -36,6 +36,7 @@ export default class Header extends Component{
                         <Route path="/RegistrationPage" element={<RegistrationPage/>} />
                         <Route path="/RoutePage" element={<RoutePage/>} />
                         <Route path="/SignUpPage" element={<SignUpPage/>} />
+                        <Route path="/HomePage" element={<HomePage/>} />
                     </Routes>
                 </Router>
             </div>
