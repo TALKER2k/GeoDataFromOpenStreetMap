@@ -29,12 +29,17 @@ export default class Header extends Component {
                         <Navbar.Toggle aria-controls="basic-navbar-nav" />
                         <Navbar.Collapse id="basic-navbar-nav">
                             <Nav className="me-auto">
-                                <Nav.Link href="/gate-page">Gate service</Nav.Link>
+                            {}
+                            {token && (
+                                <Nav>
+                                    <Nav.Link href="/gate-page">Gate service</Nav.Link>
+                                </Nav>
+                            )}
                                 <Nav.Link href="/route-page">Route service</Nav.Link>
                                 {}
                                 {!token && (
                                     <>
-                                        <Nav.Link href="/auth/login">Sign up</Nav.Link>
+                                        <Nav.Link href="/auth/login">Sign in</Nav.Link>
                                         <Nav.Link href="/auth/register">Registration</Nav.Link>
                                     </>
                                 )}
