@@ -35,7 +35,7 @@ public class UpdateGateServiceImpl implements UpdateGateService {
     private final ExecutorService executorForCity = Executors.newFixedThreadPool(10);
     private final ExecutorService executorForGate = Executors.newFixedThreadPool(10);
     static String overpassUrl = "https://overpass-api.de/api/interpreter";
-    @Scheduled(cron = "* 0/34 22 * * *")
+
     @Override
     public void updateAllGates() throws InterruptedException {
         Thread countryUpdateDB = new Thread(() -> {

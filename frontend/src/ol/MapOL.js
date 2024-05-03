@@ -210,7 +210,7 @@ class MapOL extends Component {
 
 
   render() {
-    return <div ref={this.mapRef} style={{ height: '90vh', width: '100%' }} />;
+    return <div ref={this.mapRef} style={{ height: '80vh', width: '100%' }} />;
   }
 }
 

@@ -19,6 +19,7 @@ public class DropdownController {
     @CrossOrigin(origins = "*")
     @GetMapping
     public List<Country> getCountryFront() {
+        System.out.println("...");
         System.out.println(dropdownService.getAllCountry());
         return dropdownService.getAllCountry();
     }
