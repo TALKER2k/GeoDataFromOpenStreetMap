@@ -1,11 +1,9 @@
-import React, {Component, useEffect, useRef, useState} from 'react'
+import React, { Component, useEffect, useRef, useState } from 'react'
 import Button from "react-bootstrap/Button";
 import axios from "axios";
-import Header from "../Header";
 import MapOL from "../ol/MapOL";
 
-function GatePage(){
-    const [city, setCity] = useState('City');
+function GatePage() {
     const mapRef = useRef(null);
     const [countries, setCountries] = useState([]);
     const [cities, setCities] = useState([]);
@@ -14,13 +12,18 @@ function GatePage(){
     const [selectedTypeSearch, setSelectedTypeSearch] = useState('');
     const [position, setPosition] = useState(null);
     const [intervalId, setIntervalId] = useState(null);
+    const token = localStorage.getItem("jwtToken");
 
     useEffect(() => {
         async function fetchCountries() {
             try {
-                const response = await axios.get('http://localhost:8089/api/countries');
+                const response = (await axios.get('http://localhost:8089/api/countries', {
+                    headers: {
+                      Authorization: `Bearer ${token}`
+                    }
+                  }));
                 console.log('Countries:', response.data);
-                setCountries(response.data);
+                setCountries(response.data);    
                 console.log('Страны:', response.data);
                 console.log('Страны после установки:', countries);
             } catch (error) {
@@ -36,7 +39,11 @@ function GatePage(){
     useEffect(() => {
         function fetchCities() {
             if (selectedCountry) {
-                axios.get(`http://localhost:8089/api/countries/${selectedCountry}/cities`)
+                axios.get(`http://localhost:8089/api/countries/${selectedCountry}/cities`, {
+                    headers: {
+                      Authorization: `Bearer ${token}`
+                    }
+                  })
                     .then(response => {
                         console.log('Cities:', response.data);
                         setCities(response.data);
@@ -108,6 +115,9 @@ function GatePage(){
     function updateGates() {
         fetch('http://localhost:8089/settings_gates/update', {
             method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`
+              }
         })
             .then(response => {
                 if (response.ok) {
@@ -161,7 +171,11 @@ function GatePage(){
     }
 
     function handleCheckGatesAround() {
-        fetch('http://localhost:8089/gps/checkGatesAround')
+        fetch('http://localhost:8089/gps/checkGatesAround', {
+            headers: {
+                Authorization: `Bearer ${token}`
+              }
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -172,7 +186,7 @@ function GatePage(){
                 console.error('There was a problem with the request:', error);
             });
     }
-    
+
     return (
         <div className="App">
             <select className="button" value={selectedCountry} onChange={handleCountryChange}>

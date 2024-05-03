@@ -12,8 +12,15 @@ import RoutePage from './page/RoutePage'
 import SignUpPage from './page/SignUpPage'
 import HomePage from "./page/HomePage";
 
-export default class Header extends Component{
+export default class Header extends Component {
+    handleLogout = () => {
+        localStorage.removeItem('jwtToken');
+        window.location.href = '/auth/login';
+    };
+
     render() {
+        const token = localStorage.getItem('jwtToken');
+
         return(
             <div>
                 <Navbar expand="lg" className="bg-body-tertiary">
@@ -22,20 +29,31 @@ export default class Header extends Component{
                         <Navbar.Toggle aria-controls="basic-navbar-nav" />
                         <Navbar.Collapse id="basic-navbar-nav">
                             <Nav className="me-auto">
-                                <Nav.Link href="/GatePage">Gate service</Nav.Link>
-                                <Nav.Link href="/RoutePage">Route service</Nav.Link>
-                                <Nav.Link href="/SignUpPage">Sign up</Nav.Link>
-                                <Nav.Link href="/RegistrationPage">Registration</Nav.Link>
+                                <Nav.Link href="/gate-page">Gate service</Nav.Link>
+                                <Nav.Link href="/route-page">Route service</Nav.Link>
+                                {}
+                                {!token && (
+                                    <>
+                                        <Nav.Link href="/auth/login">Sign up</Nav.Link>
+                                        <Nav.Link href="/auth/register">Registration</Nav.Link>
+                                    </>
+                                )}
                             </Nav>
+                            {}
+                            {token && (
+                                <Nav>
+                                    <Nav.Link onClick={this.handleLogout}>Logout</Nav.Link>
+                                </Nav>
+                            )}
                         </Navbar.Collapse>
                     </Container>
                 </Navbar>
                 <Router>
                     <Routes>
-                        <Route path="/GatePage" element={<GatePage/>} />
-                        <Route path="/RegistrationPage" element={<RegistrationPage/>} />
-                        <Route path="/RoutePage" element={<RoutePage/>} />
-                        <Route path="/SignUpPage" element={<SignUpPage/>} />
+                        <Route path="/gate-page" element={<GatePage/>} />
+                        <Route path="/auth/register" element={<RegistrationPage/>} />
+                        <Route path="/route-page" element={<RoutePage/>} />
+                        <Route path="/auth/login" element={<SignUpPage/>} />
                         <Route path="/HomePage" element={<HomePage/>} />
                     </Routes>
                 </Router>

@@ -1,59 +1,65 @@
-import React, { useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
+import React, { useState } from "react";
+import { Form, Button } from "react-bootstrap";
+import './css/FormPage.css';
 
-function SignUpPage() {
-    const [login, setLogin] = useState('');
-    const [password, setPassword] = useState('');
-
-    const handleLoginChange = (e) => {
-        setLogin(e.target.value);
-    };
-
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
-    };
+const SignUpPage = () => {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [token, setToken] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Здесь можно выполнить логику входа, например, отправить данные на сервер
-        fetch(`http://localhost:8089/auth/login/${login}&${password}`, {
-            method: 'POST',
+
+        const loginFormDto = {
+            username,
+            password
+        };
+
+        fetch("http://localhost:8089/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(loginFormDto)
         })
-        console.log('Email:', login);
-        console.log('Password:', password);
-        // Очищаем поля после отправки формы
-        setLogin('');
-        setPassword('');
+            .then(response => response.json())
+            .then(data => {
+                console.log("Успешный вход:", data);
+                alert("Вход выполнен успешно.");
+                localStorage.setItem("jwtToken", data.accessToken);
+                window.location.href = '/HomePage';
+            })
+            .catch(error => {
+                console.error("Ошибка при входе:", error);
+                alert("Произошла ошибка при входе.");
+            });
+    };
+
+    const handleLogin = () => {
+        window.location.href = '/HomePage';
     };
 
     return (
-        <div>
-            <h2>Enter</h2>
-            <Form>
-                <Form.Group onSubmit={handleSubmit} controlId="Login">
-                    <Form.Label>Login</Form.Label>
-                    <Form.Control
-                        type="login"
-                        placeholder="Input login"
-                        value={login}
-                        onChange={handleLoginChange} />
+        <div className="signin">
+            <Form onSubmit={handleSubmit}>
+                <Form.Group controlId="username">
+                    <Form.Label>Логин</Form.Label>
+                    <Form.Control type="text" value={username} onChange={e => setUsername(e.target.value)}
+                    placeholder="Your username" />
                 </Form.Group>
 
-                <Form.Group controlId="Password">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                        type="password"
-                        placeholder="Input password"
-                        value={password}
-                        onChange={handlePasswordChange} />
+                <Form.Group className="password-label" controlId="password">
+                    <Form.Label>Пароль</Form.Label>
+                    <Form.Control type="password" value={password} onChange={e => setPassword(e.target.value)}
+                    placeholder="Your password" />
                 </Form.Group>
 
-                <Button variant="primary" type="submit">
-                    Sign in
+                <Button className="button-signin" variant="primary" type="submit">
+                    Войти
                 </Button>
             </Form>
         </div>
     );
-}
+};
 
 export default SignUpPage;
