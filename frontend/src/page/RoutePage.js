@@ -11,15 +11,20 @@ function RoutePage(){
     const [selectedBus, setSelectedBus] = useState('');
     const [position, setPosition] = useState(null);
     const [intervalId, setIntervalId] = useState(null);
+    const token = localStorage.getItem("jwtToken");
 
 
     useEffect(() => {
         async function fetchRoutes() {
             try {
-                const response = await axios.get('http://localhost:8089/route/getAllRoutes');
+                const response = await axios.get('http://localhost:8089/route/getAllRoutes', {
+                    headers: {
+                      Authorization: `Bearer ${token}`
+                    }
+                  });
                 setRoutes(response.data);
             } catch (error) {
-                console.error('Error fetching countries:', error);
+                console.error('Error fetching routes:', error);
             }
         }
 
@@ -31,6 +36,9 @@ function RoutePage(){
         if (selectedRoute) {
             fetch(`http://localhost:8089/route/getLinesByRouteId/${selectedRoute}`, {
                 method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                  }
             })
                 .then(response => {
                     if (response.ok) {
@@ -52,6 +60,9 @@ function RoutePage(){
 
             fetch(`http://localhost:8089/route/getPointsByRouteId/${selectedRoute}`, {
                 method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                  }
             })
                 .then(response => {
                     if (response.ok) {
@@ -92,6 +103,9 @@ function RoutePage(){
     function updateRoutes() {
         fetch('http://localhost:8089/route/updateBDRouteBus', {
             method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`
+              }
         })
             .then(response => {
                 if (response.ok) {
