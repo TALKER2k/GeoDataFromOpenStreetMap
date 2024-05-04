@@ -4,6 +4,9 @@ server:
 geography:
   srid: 4326
 
+jwt:
+  expiration-time-ms: 700000
+
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
