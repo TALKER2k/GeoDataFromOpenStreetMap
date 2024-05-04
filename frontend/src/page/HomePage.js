@@ -1,6 +1,6 @@
 import React from 'react';
-import { Container } from 'react-bootstrap';
-import { useSpring, animated } from 'react-spring';
+import {Container} from 'react-bootstrap';
+import {animated, useSpring} from 'react-spring';
 
 function HomePage() {
     const styles = useSpring({

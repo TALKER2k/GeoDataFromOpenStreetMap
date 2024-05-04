@@ -38,7 +38,6 @@ public class UsersServiceImpl implements UserService {
     @Transactional
     public Employee registerUser(RegistrationFormDTO registrationFormDto) {
         Employee registeredUser = convertToEmployee(registrationFormDto);
-        System.out.println(444);
         userRepository.save(registeredUser);
 
         return registeredUser;

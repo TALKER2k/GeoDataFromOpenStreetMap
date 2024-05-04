@@ -6,7 +6,6 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.models.Gates.City;
 import su.vistar.Openstreetmaps.models.Gates.Country;

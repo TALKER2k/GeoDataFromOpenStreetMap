@@ -19,7 +19,9 @@ import su.vistar.Openstreetmaps.models.Routes.Stop;
 import su.vistar.Openstreetmaps.repositories.RouteRepositories.*;
 import su.vistar.Openstreetmaps.services.RouteServises.RouteBusService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static su.vistar.Openstreetmaps.services.GateServises.Impl.UpdateGateServiceImpl.sendOverpassQuery;

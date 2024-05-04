@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useRef, useState } from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import Button from "react-bootstrap/Button";
 import axios from "axios";
 import MapOL from "../ol/MapOL";

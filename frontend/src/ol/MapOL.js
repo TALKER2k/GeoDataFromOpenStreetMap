@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -8,12 +8,11 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
-import { fromLonLat } from 'ol/proj';
-import { Icon, Style } from 'ol/style';
+import {fromLonLat} from 'ol/proj';
+import {Circle as CircleStyle, Fill, Icon, Stroke, Style} from 'ol/style';
 import Overlay from 'ol/Overlay';
 import './MapStyle.css';
 import LineString from 'ol/geom/LineString';
-import { Stroke, Fill, Circle as CircleStyle } from 'ol/style';
 
 
 class MapOL extends Component {

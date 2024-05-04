@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Form, Button, Table, Placeholder } from "react-bootstrap";
+import React, {useState} from "react";
+import {Button, Form, Table} from "react-bootstrap";
 import './css/FormPage.css';
 
 const RegistrationPage = () => {

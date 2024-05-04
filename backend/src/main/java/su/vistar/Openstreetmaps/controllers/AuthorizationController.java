@@ -31,17 +31,14 @@ public class AuthorizationController {
     @CrossOrigin(origins = "*")
     @PostMapping("/register")
     public ResponseEntity<Employee> register(@RequestBody RegistrationFormDTO registrationFormDto) {
-        System.out.println(111);
         if (usersService.existsByUserName(registrationFormDto.getUsername())) {
             return ResponseEntity.badRequest()
                     .header("Server message", "Username is taken")
                     .build();
         }
-        System.out.println(222);
 
         Employee employee = usersService.registerUser(registrationFormDto);
 
-        System.out.println(333);
         return ResponseEntity.ok()
                 .header("Server message", "User registered successfully")
                 .body(employee);
