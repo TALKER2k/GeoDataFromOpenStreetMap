@@ -1,0 +1,21 @@
+.register {
+    margin: 50px 30% 50px 30%;
+    border: 1px solid black;
+    border-radius: 30px;
+    padding: 30px;
+}
+
+.signin {
+    margin: 50px 30% 50px 30%;
+    border: 1px solid black;
+    border-radius: 30px;
+    padding: 30px;
+}
+
+.button-signin {
+    margin-top: 20px;
+}
+
+.password-label {
+    margin-top: 20px;
+}

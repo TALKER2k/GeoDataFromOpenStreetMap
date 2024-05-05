@@ -46,7 +46,7 @@ public class RouteBusServiceImpl implements RouteBusService {
 
     @Override
     public List<RouteDTO> getAllRoutes() {
-        List<Route> routes = routeRepository.findAll();
+        List<Route> routes = routeRepository.findAllByOrderByRef();
         return routes.stream()
                 .map(route -> modelMapper.map(route, RouteDTO.class))
                 .collect(Collectors.toList());
