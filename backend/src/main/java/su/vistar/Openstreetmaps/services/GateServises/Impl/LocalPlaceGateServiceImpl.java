@@ -1,22 +1,23 @@
 package su.vistar.Openstreetmaps.services.GateServises.Impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import su.vistar.Openstreetmaps.DTO.GatesDTO;
 import su.vistar.Openstreetmaps.DTO.GeoLocation;
-import su.vistar.Openstreetmaps.models.Gates.City;
 import su.vistar.Openstreetmaps.models.Employee;
+import su.vistar.Openstreetmaps.models.Gates.City;
 import su.vistar.Openstreetmaps.models.Gates.LocalPlaceGate;
 import su.vistar.Openstreetmaps.repositories.GateRepositories.CityRepository;
 import su.vistar.Openstreetmaps.repositories.GateRepositories.LocalPlaceGateRepository;
 import su.vistar.Openstreetmaps.repositories.UserRepository;
 import su.vistar.Openstreetmaps.services.GateServises.LocalPlaceGateService;
 import su.vistar.Openstreetmaps.services.TelephoneService;
-import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 

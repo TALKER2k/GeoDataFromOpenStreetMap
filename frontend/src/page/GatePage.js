@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useRef, useState } from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import Button from "react-bootstrap/Button";
 import axios from "axios";
 import MapOL from "../ol/MapOL";
@@ -76,6 +76,9 @@ function GatePage() {
     function createRequestSearchCity(request) {
         fetch(request, {
             method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`
+              }
         })
             .then(response => {
                 if (!response.ok) {
@@ -204,12 +207,12 @@ function GatePage() {
                     </option>
                 ))}
             </select>
-            <Button className="button" onClick={handleCheckGatesAround} variant="primary">Open Gate Around</Button>
-            <Button className="button" onClick={searchCity} variant="primary">Show lift gates</Button>
-            <Button className="button" onClick={updateGates} variant="primary">Update data for lift gates</Button>
+            <Button className="button" onClick={searchCity} variant="primary">Show</Button>
+            <Button className="button" onClick={handleCheckGatesAround} variant="primary">Open</Button>
+            <Button className="button" onClick={updateGates} variant="primary">Update data</Button>
             <Button className="button" onClick={showMyLocation} variant="primary">My location</Button>
             <select className="button" value={selectedTypeSearch} onChange={handleTypeSearchChange}>
-                <option value="">Select Type search</option>
+                <option value="">Select Type</option>
                 <option value={1}>Data base</option>
                 <option value={2}>OSM</option>
             </select>

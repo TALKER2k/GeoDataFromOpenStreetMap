@@ -9,11 +9,10 @@ import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { fromLonLat } from 'ol/proj';
-import { Icon, Style } from 'ol/style';
+import { Circle as CircleStyle, Fill, Icon, Stroke, Style } from 'ol/style';
 import Overlay from 'ol/Overlay';
 import './MapStyle.css';
 import LineString from 'ol/geom/LineString';
-import { Stroke, Fill, Circle as CircleStyle } from 'ol/style';
 
 
 class MapOL extends Component {
@@ -75,8 +74,8 @@ class MapOL extends Component {
 
     const coordinates = geojson.coordinates;
 
-    const lon = coordinates[0]; 
-    const lat = coordinates[1]; 
+    const lon = coordinates[0];
+    const lat = coordinates[1];
     const projectedCoord = fromLonLat([lon, lat]);
 
     this.centerMap(lon, lat);
@@ -127,12 +126,12 @@ class MapOL extends Component {
 
     const lineStyle = new Style({
       stroke: new Stroke({
-          color: 'blue',
-          width: 15,
+        color: 'blue',
+        width: 12,
       }),
-  });
-  
-  lineFeature.setStyle(lineStyle);
+    });
+
+    lineFeature.setStyle(lineStyle);
 
     if (!this.vectorSource) {
       this.vectorSource = new VectorSource();
@@ -198,15 +197,21 @@ class MapOL extends Component {
     const pixel = this.map.getEventPixel(event.originalEvent);
     const feature = this.map.forEachFeatureAtPixel(pixel, (feature) => feature);
     if (feature) {
-      this.popup.innerHTML = `<div>Phone: ${feature.get('number')}</div><div>Name: ${feature.get('name')}</div>`;
-      this.popup.style.display = 'block';
-      this.popup.style.left = `${event.pixel[0]}px`;
-      this.popup.style.top = `${event.pixel[1]}px`;
+      if (feature.get('number') === undefined) {
+        this.popup.innerHTML = `<div>Name: bus_stop</div>`;
+        this.popup.style.display = 'block';
+        this.popup.style.left = `${event.pixel[0]}px`;
+        this.popup.style.top = `${event.pixel[1]}px`;
+      } else {
+        this.popup.innerHTML = `<div>Phone: ${feature.get('number')}</div><div>Name: ${feature.get('name')}</div>`;
+        this.popup.style.display = 'block';
+        this.popup.style.left = `${event.pixel[0]}px`;
+        this.popup.style.top = `${event.pixel[1]}px`;
+      }
     } else {
       this.popup.style.display = 'none';
     }
   }
-
 
 
   render() {

@@ -1,10 +1,8 @@
-import React from 'react';
+import React, {Component} from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import {Route, BrowserRouter as Router, Routes} from 'react-router-dom'
-import Switch, {Component} from 'react';
-import Browser from "leaflet/src/core/Browser";
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom'
 
 import GatePage from './page/GatePage'
 import RegistrationPage from './page/RegistrationPage'

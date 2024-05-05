@@ -3,7 +3,6 @@ package su.vistar.Openstreetmaps.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Set;
 

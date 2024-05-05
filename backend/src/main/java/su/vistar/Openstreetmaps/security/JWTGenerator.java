@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,8 @@ import java.util.Date;
 
 @Component
 public class JWTGenerator {
+    @Value("${jwt.expiration-time-ms}")
+    private Long expirationTimeMs;
     private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     @Autowired
@@ -23,7 +26,8 @@ public class JWTGenerator {
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
         Date currentDate = new Date();
-        Date expireDate = new Date(currentDate.getTime() + SecurityConstants.JWT_EXPIRATION_TIME_MS);
+        Date expireDate = new Date(currentDate.getTime() +
+                expirationTimeMs);
 
         String token = Jwts.builder()
                 .setSubject(username)
