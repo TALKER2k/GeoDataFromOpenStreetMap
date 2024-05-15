@@ -11,19 +11,20 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import su.vistar.Openstreetmaps.DTO.RouteDTO;
 import su.vistar.Openstreetmaps.models.Routes.Point;
 import su.vistar.Openstreetmaps.models.Routes.Route;
 import su.vistar.Openstreetmaps.models.Routes.RouteStop;
 import su.vistar.Openstreetmaps.models.Routes.Stop;
+import su.vistar.Openstreetmaps.repositories.GateRepositories.CityRepository;
 import su.vistar.Openstreetmaps.repositories.RouteRepositories.*;
 import su.vistar.Openstreetmaps.services.RouteServises.RouteBusService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.hibernate.query.sqm.tree.SqmNode.log;
 import static su.vistar.Openstreetmaps.services.GateServises.Impl.UpdateGateServiceImpl.sendOverpassQuery;
 
 @Service
@@ -34,14 +35,159 @@ public class RouteBusServiceImpl implements RouteBusService {
     private final StopRepository stopRepository;
     private final LineStringRepository lineStringRepository;
     private final ModelMapper modelMapper;
+    private final CityRepository cityRepository;
 
-    public RouteBusServiceImpl(PointRepository pointRepository, RouteRepository routeRepository, RouteStopRepository routeStopRepository, StopRepository stopRepository, LineStringRepository lineStringRepository, ModelMapper modelMapper) {
+    public RouteBusServiceImpl(PointRepository pointRepository, RouteRepository routeRepository, RouteStopRepository routeStopRepository, StopRepository stopRepository, LineStringRepository lineStringRepository, ModelMapper modelMapper, CityRepository cityRepository) {
         this.pointRepository = pointRepository;
         this.routeRepository = routeRepository;
         this.routeStopRepository = routeStopRepository;
         this.stopRepository = stopRepository;
         this.lineStringRepository = lineStringRepository;
         this.modelMapper = modelMapper;
+        this.cityRepository = cityRepository;
+    }
+
+    @Override
+    public List<String> getWaysByRouteIdByOsm(Long routeId) {
+        return null;
+    }
+
+    @Override
+    public List<String> getByRouteIdByOsm(Long routeId) throws Exception {
+
+        return pointRepository.findByRouteId(routeId);
+    }
+
+    @Override
+    public List<String> getLinesByRouteIdByOsm(Long routeId) throws Exception {
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
+
+        String query = "[out:json];" +
+                "relation(" + routeId + ");\n" +
+                "out;";
+
+        sendQuery(overpassUrl, query);
+
+
+        return lineStringRepository.findByRouteId(routeId);
+    }
+
+    public void sendQuery(String overpassUrl, String query) throws Exception {
+
+        String response = sendOverpassQuery(overpassUrl, query);
+        Gson gson = new Gson();
+        JsonObject osmObject = gson.fromJson(response, JsonObject.class);
+        JsonArray elements = osmObject.getAsJsonArray("elements");
+        System.out.println(elements);
+
+        for (JsonElement element : elements) {
+            JsonObject jsonElement = element.getAsJsonObject();
+            JsonArray members = jsonElement.get("members").getAsJsonArray();
+            System.out.println(members);
+
+            int count = 0;
+            for (var member : members) {
+                System.out.println(member);
+
+                String type = member.getAsJsonObject().get("type").getAsString();
+                Route route = new Route();
+                su.vistar.Openstreetmaps.models.Routes.LineString lineStringEntity =
+                        new su.vistar.Openstreetmaps.models.Routes.LineString();
+                RouteStop routeStop = new RouteStop();
+                Stop stop = new Stop();
+                Point point = new Point();
+
+
+                JsonElement tagsElement = jsonElement.get("tags");
+                if (tagsElement != null && tagsElement.isJsonObject()) {
+                    JsonObject tagsObject = tagsElement.getAsJsonObject();
+                    route
+                            .setId(jsonElement.get("id").getAsLong());
+                    if (tagsObject.has("name") && !tagsObject.get("name").isJsonNull()) {
+                        route.setName(tagsObject.get("name").getAsString());
+                    }
+                    if (tagsObject.has("from") && !tagsObject.get("from").isJsonNull()) {
+                        route.setFrom(tagsObject.get("from").getAsString());
+                    }
+                    if (tagsObject.has("network") && !tagsObject.get("network").isJsonNull()) {
+                        route.setNetwork(tagsObject.get("network").getAsString());
+                    }
+                    if (tagsObject.has("to") && !tagsObject.get("to").isJsonNull()) {
+                        route.setTo(tagsObject.get("to").getAsString());
+                    }
+                    if (tagsObject.has("public_transport:version") && !tagsObject.get("public_transport:version").isJsonNull()) {
+                        route.setPublicTransport(tagsObject.get("public_transport:version").getAsInt());
+                    }
+                    if (tagsObject.has("ref") && !tagsObject.get("ref").isJsonNull()) {
+                        route.setRef(tagsObject.get("ref").getAsString());
+                    }
+                    if (tagsObject.has("route") && !tagsObject.get("route").isJsonNull()) {
+                        route.setRoute(tagsObject.get("route").getAsString());
+                    }
+                }
+                routeRepository.save(route);
+
+                if ("way".equals(type)) {
+                    long wayId = member.getAsJsonObject().get("ref").getAsLong();
+
+                    try {
+                        List<Coordinate> coordinates = ResponseWay(wayId);
+                        Coordinate[] coordinates1 = coordinates.toArray(Coordinate[]::new);
+
+                        org.locationtech.jts.geom.GeometryFactory geometryFactory =
+                                new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 3857);
+
+                        LineString lineString = geometryFactory.createLineString(coordinates1);
+                        lineString.setSRID(3857);
+
+                        lineStringEntity
+                                .setIdLine(UUID.randomUUID())
+                                .setId(wayId)
+                                .setRouteId(route.getId())
+                                .setGeom(lineString);
+//                        resultWays.add(String.format("ST_AsGeoJSON(%s)", lineStringEntity));
+                        lineStringRepository.save(lineStringEntity);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if ("node".equals(type)) {
+                    if ("stop".equals(member.getAsJsonObject().get("role").getAsString())
+                    || "platform".equals(member.getAsJsonObject().get("role").getAsString())
+                    || "platform_exit_only".equals(member.getAsJsonObject().get("role").getAsString())) {
+                        stop
+                                .setId(member.getAsJsonObject().get("ref").getAsLong())
+                                .setName(member.getAsJsonObject().get("role").getAsString());
+                        try {
+                            Coordinate coordinate = ResponseNode(stop.getId());
+                            stop.setLat(coordinate.getX());
+                            stop.setLon(coordinate.getY());
+
+                            org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory(new PrecisionModel(), 3857);
+                            org.locationtech.jts.geom.Point point_ = geometryFactory.createPoint(new Coordinate(coordinate.getX(), coordinate.getY()));
+                            point_.setSRID(3857);
+                            stopRepository.save(stop);
+
+                            point.setId(UUID.randomUUID());
+                            point.setStopId(stop.getId());
+                            point.setPoint(point_);
+                            point.setRouteId(route.getId());
+//                            resultPoints.add(String.format("ST_AsGeoJSON(%s)", point));
+                            pointRepository.save(point);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        routeStop.setId(UUID.randomUUID());
+                        routeStop.setRoute(route);
+                        routeStop.setStop(stop);
+                        routeStop.setSequence(count++);
+                        routeStopRepository.save(routeStop);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -50,6 +196,80 @@ public class RouteBusServiceImpl implements RouteBusService {
         return routes.stream()
                 .map(route -> modelMapper.map(route, RouteDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RouteDTO> getAllRoutesByCityByOSM(Long cityId) {
+        String cityName = cityRepository.findById(cityId).get().getName();
+        String overpassUrl = "https://overpass-api.de/api/interpreter";
+
+        String query = "[out:json];" +
+                "area[\"name\"=\"" + cityName + "\"];\n" +
+                "(relation[\"route\"=\"bus\"](area););\n" +
+                "out;";
+        Set<RouteDTO> resultRoutes = new HashSet<>();
+        String response = null;
+        try {
+            response = sendOverpassQuery(overpassUrl, query);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        Gson gson = new Gson();
+        JsonObject osmObject = gson.fromJson(response, JsonObject.class);
+        JsonArray elements = osmObject.getAsJsonArray("elements");
+
+        for (JsonElement element : elements) {
+            JsonObject jsonElement = element.getAsJsonObject();
+            JsonArray members = jsonElement.get("members").getAsJsonArray();
+            Route route = new Route();
+            int count = 0;
+            for (var member : members) {
+
+                String type = member.getAsJsonObject().get("type").getAsString();
+                su.vistar.Openstreetmaps.models.Routes.LineString lineStringEntity =
+                        new su.vistar.Openstreetmaps.models.Routes.LineString();
+                RouteStop routeStop = new RouteStop();
+                Stop stop = new Stop();
+                Point point = new Point();
+
+
+                JsonElement tagsElement = jsonElement.get("tags");
+                if (tagsElement != null && tagsElement.isJsonObject()) {
+                    JsonObject tagsObject = tagsElement.getAsJsonObject();
+                    route
+                            .setId(jsonElement.get("id").getAsLong());
+                    if (tagsObject.has("name") && !tagsObject.get("name").isJsonNull()) {
+                        route.setName(tagsObject.get("name").getAsString());
+                    }
+                    if (tagsObject.has("from") && !tagsObject.get("from").isJsonNull()) {
+                        route.setFrom(tagsObject.get("from").getAsString());
+                    }
+                    if (tagsObject.has("network") && !tagsObject.get("network").isJsonNull()) {
+                        route.setNetwork(tagsObject.get("network").getAsString());
+                    }
+                    if (tagsObject.has("to") && !tagsObject.get("to").isJsonNull()) {
+                        route.setTo(tagsObject.get("to").getAsString());
+                    }
+                    if (tagsObject.has("public_transport:version") && !tagsObject.get("public_transport:version").isJsonNull()) {
+                        route.setPublicTransport(tagsObject.get("public_transport:version").getAsInt());
+                    }
+                    if (tagsObject.has("ref") && !tagsObject.get("ref").isJsonNull()) {
+                        route.setRef(tagsObject.get("ref").getAsString());
+                    }
+                    if (tagsObject.has("route") && !tagsObject.get("route").isJsonNull()) {
+                        route.setRoute(tagsObject.get("route").getAsString());
+                    }
+                }
+            }
+            resultRoutes.add(new RouteDTO(route.getId(),
+                    route.getName(), route.getFrom(), route.getRef()));
+        }
+
+        log.info("Method getAllGatesByCityByOSM end");
+        return resultRoutes.stream()
+                .sorted(Comparator.comparing(RouteDTO::getRef))
+                .toList();
     }
 
     @Override

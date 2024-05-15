@@ -12,4 +12,11 @@ public interface RouteBusService {
     List<String> getWaysByRouteId(Long id);
 
     void updateAllBusStop();
+
+    List<RouteDTO> getAllRoutesByCityByOSM(Long cityId);
+
+    List<String> getWaysByRouteIdByOsm(Long id);
+
+    List<String> getByRouteIdByOsm(Long id) throws Exception;
+    List<String> getLinesByRouteIdByOsm(Long id) throws Exception;
 }

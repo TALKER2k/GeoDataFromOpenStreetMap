@@ -44,4 +44,34 @@ public class RouteBusController {
         log.info("getAllRoutes start... Id = " + id);
         return routeBusService.getPointsByRouteId(id);
     }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/getAllRouteByOSM/{id}")
+    public List<RouteDTO> getAllGatesByOSM(@PathVariable("id") Long cityId) {
+        log.info("Method getAllGatesByOSM start");
+        return routeBusService.getAllRoutesByCityByOSM(cityId);
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("getLinesByRouteIdByOsm/{id}")
+    public List<String> getLinesByRouteIdByOsm(@PathVariable("id") Long id) {
+        log.info("getAllRoutes start... Id = " + id);
+        return routeBusService.getWaysByRouteIdByOsm(id);
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("getPointsByRouteIdByOsm/{id}")
+    public List<String> getPointsByRouteIdByOsm(@PathVariable("id") Long id)
+            throws Exception {
+        log.info("getRoute start... Id = " + id);
+        return routeBusService.getByRouteIdByOsm(id);
+    }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("getLineByRouteIdByOsm/{id}")
+    public List<String> getLineByRouteIdByOsm(@PathVariable("id") Long id)
+            throws Exception {
+        log.info("getRoute start... Id = " + id);
+        return routeBusService.getLinesByRouteIdByOsm(id);
+    }
 }

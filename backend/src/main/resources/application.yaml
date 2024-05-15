@@ -5,7 +5,7 @@ geography:
   srid: 4326
 
 jwt:
-  expiration-time-ms: 700000
+  expiration-time-ms: 70000000
 
 spring:
   datasource:

@@ -8,4 +8,15 @@ public class RouteDTO{
         String name;
         String from;
         String ref;
+
+        public RouteDTO(Long id, String name, String from, String ref) {
+                this.id = id;
+                this.name = name;
+                this.from = from;
+                this.ref = ref;
+        }
+
+        public RouteDTO() {
+        }
 }
+
